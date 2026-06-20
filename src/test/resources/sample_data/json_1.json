@@ -1,0 +1,34 @@
+[
+  {
+    "CID": 94,
+    "FULLNAME": "Ammie Smithyman",
+    "DATEOFBIRTH": "2013-08-23",
+    "MOBILENUMBER": "eos",
+    "EMAIL": "Clinton.Allaker@gmail.com",
+    "ADDRESS": "Castro St 55",
+    "ADHARNUMBER": "sit",
+    "ACCOUNTNUMBER": "occaecat",
+    "BANKNAME": "Alejandra",
+    "STATUS": "consequat.",
+    "BALANCE": 29,
+    "CREATED_AT": "2015-10-05",
+    "UPDATED_AT": "2010-01-05",
+    "TRANSACTIONS": "et"
+  },
+  {
+    "CID": 71,
+    "FULLNAME": "Akilah Allabarton",
+    "DATEOFBIRTH": "2012-09-22",
+    "MOBILENUMBER": "quia",
+    "EMAIL": "Bud.Davson@gmail.com",
+    "ADDRESS": "Waller St 92",
+    "ADHARNUMBER": "magnam",
+    "ACCOUNTNUMBER": "sit",
+    "BANKNAME": "Amberly",
+    "STATUS": "rem",
+    "BALANCE": 19,
+    "CREATED_AT": "2002-01-14",
+    "UPDATED_AT": "2000-10-09",
+    "TRANSACTIONS": "reprehenderit"
+  }
+]

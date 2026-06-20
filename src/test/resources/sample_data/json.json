@@ -1,0 +1,34 @@
+[
+  {
+    "CID": 3,
+    "FULLNAME": "Alyse Smitherman",
+    "DATEOFBIRTH": "2014-04-22",
+    "MOBILENUMBER": "",
+    "EMAIL": "Amee.Davisson@gmail.com",
+    "ADDRESS": "Second Ave 38",
+    "ADHARNUMBER": "laboriosam,",
+    "ACCOUNTNUMBER": "Ut",
+    "BANKNAME": "Charles",
+    "STATUS": "anim",
+    "BALANCE": 68,
+    "CREATED_AT": "2019-11-12",
+    "UPDATED_AT": "2003-09-27",
+    "TRANSACTIONS": "commodi"
+  },
+  {
+    "CID": 76,
+    "FULLNAME": "Alex Smout",
+    "DATEOFBIRTH": "2000-05-23",
+    "MOBILENUMBER": "qui",
+    "EMAIL": "Ana.Davoren@gmail.com",
+    "ADDRESS": "Waller St 46",
+    "ADHARNUMBER": "quisquam",
+    "ACCOUNTNUMBER": "quo",
+    "BANKNAME": "Carmen",
+    "STATUS": "ab",
+    "BALANCE": 39,
+    "CREATED_AT": "2019-07-27",
+    "UPDATED_AT": "2004-03-16",
+    "TRANSACTIONS": "consequuntur"
+  }
+]

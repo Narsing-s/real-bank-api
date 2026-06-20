@@ -1,0 +1,34 @@
+[
+  {
+    "CID": 21,
+    "FULLNAME": "Aline Alishoner",
+    "DATEOFBIRTH": "2018-01-13",
+    "MOBILENUMBER": "occaecat",
+    "EMAIL": "Alexander.Davoren@gmail.com",
+    "ADDRESS": "Castro St 32",
+    "ADHARNUMBER": "cillum",
+    "ACCOUNTNUMBER": "Excepteur",
+    "BANKNAME": "Alline",
+    "STATUS": "aliquip",
+    "BALANCE": 35,
+    "CREATED_AT": "2003-04-03",
+    "UPDATED_AT": "2014-04-15",
+    "TRANSACTIONS": "quia"
+  },
+  {
+    "CID": 12,
+    "FULLNAME": "Connie Davison",
+    "DATEOFBIRTH": "2000-05-15",
+    "MOBILENUMBER": "inventore",
+    "EMAIL": "Amie.Smithies@gmail.com",
+    "ADDRESS": "Waller St 48",
+    "ADHARNUMBER": "Nemo",
+    "ACCOUNTNUMBER": "sit",
+    "BANKNAME": "Coleman",
+    "STATUS": "illum",
+    "BALANCE": 53,
+    "CREATED_AT": "2013-03-13",
+    "UPDATED_AT": "2016-08-26",
+    "TRANSACTIONS": "Ut"
+  }
+]

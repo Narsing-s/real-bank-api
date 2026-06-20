@@ -1,0 +1,45 @@
+{
+  "sampleData": {
+    "eccb933f-02c4-4c92-b1a5-1c185fc7af2c": {
+      "payload": "sample_data/java.dwl",
+      "vars-dbdata": "sample_data/list_java.dwl",
+      "attributes": "sample_data/java_1.dwl"
+    },
+    "c80d7aad-6e9f-4085-b222-cbac92993be7": {
+      "attributes": "sample_data/defaultnulltype.dwl",
+      "vars-inputpayload": "sample_data/json.json",
+      "vars-amount": "sample_data/defaultnumbertype.json",
+      "vars-accountNumber": "sample_data/defaultstringtype_5.dwl",
+      "vars-BALANCE": "sample_data/java_2.dwl"
+    },
+    "0a372be4-f5ae-4e16-9def-3d0069d64948": {
+      "vars-accountNumber": "sample_data/defaultstringtype.dwl",
+      "payload": "sample_data/defaultstringtype_1.dwl",
+      "vars-inputpayload": "sample_data/json_1.json",
+      "vars-Before  update DB": "sample_data/list_java_1.dwl"
+    },
+    "4ee169d1-51ee-4489-8853-5dc92354e066": {
+      "vars-bankname": "sample_data/defaultstringtype_2.dwl",
+      "vars-inputpayload": "sample_data/json_2.json",
+      "vars-email": "sample_data/defaultstringtype_3.dwl"
+    },
+    "63c40535-ebe7-47c5-80fb-1bb24a4cbd23": {
+      "vars-status": "sample_data/defaultstringtype_4.dwl"
+    },
+    "6260b715-ee93-4285-a495-8e9404f9f007": {
+      "payload": "sample_data/list_json.json"
+    },
+    "05bed23e-342c-4ceb-bff9-0d94af58244c": {
+      "payload": "sample_data/list_java_2.dwl",
+      "vars-amount": "sample_data/defaultnumbertype_1.json",
+      "vars-inputpayload": "sample_data/json_3.json"
+    },
+    "4660392b-9003-4968-a223-ab337c7156d3": {
+      "vars-accountNumber": "sample_data/defaultstringtype_6.dwl",
+      "vars-balance": "sample_data/java_3.dwl"
+    },
+    "34bc716c-dd61-45b5-b0e4-a034d6c51bb8": {
+      "vars-BALANCE": "sample_data/java_4.dwl"
+    }
+  }
+}

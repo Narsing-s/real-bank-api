@@ -1,0 +1,253 @@
+#%RAML 1.0
+title: real-bank-api
+version: v1
+
+protocols: [HTTP, HTTPS]
+
+types:
+
+  Account:
+    type: object
+    properties:
+      accountNumber: string
+      FullName: string
+      dateOfBirth: date-only
+      mobileNumber: string
+      email: string
+      address: string
+      status:
+        type: string
+        enum: [ACTIVE, INACTIVE]
+      balance: number
+    example:
+      accountNumber: "ACC1001"
+      FullName: "Narsing Rao"
+      dateOfBirth: "1998-05-12"
+      mobileNumber: "9876543210"
+      email: "narsing@example.com"
+      address: "Andhra Pradesh, India"
+      status: "ACTIVE"
+      balance: 5000
+
+  CreateAccountRequest:
+    type: object
+    properties:
+      FullName: string
+      dateOfBirth: date-only
+      mobileNumber: string
+      email: string
+      address: string
+    example:
+      FullName: "Narsing Rao"
+      dateOfBirth: "1998-05-12"
+      mobileNumber: "9876543210"
+      email: "narsing@example.com"
+      address: "Andhra Pradesh, India"
+
+  AmountRequest:
+    type: object
+    properties:
+      amount:
+        type: number
+        minimum: 1
+    example:
+      amount: 1000
+
+  MessageResponse:
+    type: object
+    properties:
+      message: string
+    example:
+      message: "Operation completed successfully"
+
+  Transaction:
+    type: object
+    properties:
+      accountNumber: string
+      type: string
+      amount: number
+      balance: number
+      timestamp: datetime
+    example:
+      accountNumber: "ACC1001"
+      type: "DEPOSIT"
+      amount: 1000
+      balance: 6000
+      timestamp: "2026-04-23T10:15:30Z"
+
+/accounts:
+
+  post:
+    queryParameters:
+      adharNumber:
+        type: string
+        required: true
+        minLength: 12
+        maxLength: 12
+        example: "123456789012"
+
+      bankName:
+        type: string
+        required: true
+        enum: [HDFC, SBI, APGIVB, AXIS, ICICI, YES]
+        example: "SBI"
+
+    body:
+      application/json:
+        type: CreateAccountRequest
+
+    responses:
+      201:
+        body:
+          application/json:
+            type: MessageResponse
+            example:
+              message: "Account created successfully"
+
+      400:
+        body:
+          application/json:
+            type: MessageResponse
+            example:
+              message: "Invalid request data"
+
+  get:
+    queryParameters:
+      status:
+        type: string
+        enum: [ACTIVE, INACTIVE]
+        example: "ACTIVE"
+
+    responses:
+      200:
+        body:
+          application/json:
+            type: Account[]
+            example:
+              - accountNumber: "ACC1001"
+                FullName: "Narsing Rao"
+                dateOfBirth: "1998-05-12"
+                mobileNumber: "9876543210"
+                email: "narsing@example.com"
+                address: "Andhra Pradesh, India"
+                status: "ACTIVE"
+                balance: 5000
+
+  /{accountNumber}:
+
+    uriParameters:
+      accountNumber:
+        type: string
+        example: "ACC1001"
+
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              type: Account
+        404:
+          body:
+            application/json:
+              type: MessageResponse
+              example:
+                message: "Account not found"
+
+    patch:
+      body:
+        application/json:
+          type: object
+          properties:
+            FullName:
+              type: string
+              required: false
+            mobileNumber:
+              type: string
+              required: true
+            address:
+              type: string
+              required: false
+          example:
+            FullName: "Updated Name"
+            mobileNumber: "9876543210"
+            address: "Updated Address"
+
+      responses:
+        200:
+          body:
+            application/json:
+              type: MessageResponse
+              example:
+                message: "Account updated successfully"
+
+    delete:
+      responses:
+        200:
+          body:
+            application/json:
+              type: MessageResponse
+              example:
+                message: "Account deleted successfully"
+
+    /deposit:
+      post:
+        body:
+          application/json:
+            type: AmountRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: Transaction
+
+    /withdraw:
+      post:
+        body:
+          application/json:
+            type: AmountRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: Transaction
+          400:
+            body:
+              application/json:
+                type: MessageResponse
+                example:
+                  message: "Insufficient balance"
+
+    /transactions:
+      get:
+        description: Get transaction history
+        responses:
+          200:
+            body:
+              application/json:
+                type: Transaction[]
+                example:
+                  - accountNumber: "ACC1001"
+                    type: "DEPOSIT"
+                    amount: 1000
+                    balance: 6000
+                    timestamp: "2026-04-23T10:15:30Z"
+
+/assistance/whatsapp:
+  post:
+    body:
+      application/json:
+        type: object
+        properties:
+          mobileNumber: string
+          message: string
+        example:
+          mobileNumber: "9876543210"
+          message: "Hello, I need help with my account"
+
+    responses:
+      200:
+        body:
+          application/json:
+            type: MessageResponse
+            example:
+              message: "Message sent via WhatsApp successfully"

@@ -1,0 +1,1062 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="real-bank-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="real-bank-api-config" api="real-bank-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="2772b286-3178-416a-95d2-2b263bed8fb4" >
+		<snowflake:snowflake-connection accountName="NHPINIA-TU71957" warehouse="COMPUTE_WH" database="MYDATABASE" schema="PUBLIC" user="MULEY" password="Narsing@123456789" role="ACCOUNTADMIN" />
+	</snowflake:snowflake-config>
+	
+	<ee:object-store-caching-strategy name="Caching_Strategy" doc:name="Caching Strategy" doc:id="c8d1d9d5-0607-4e1e-8078-3da4f74fd448" />
+	<flow name="real-bank-api-main">
+        <http:listener config-ref="real-bank-api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="real-bank-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="real-bank-api-console">
+        <http:listener config-ref="real-bank-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="real-bank-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            
+        </error-handler>
+    </flow>
+    <flow name="delete:\accounts\(accountNumber):real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="c1cc4235-df27-4916-8064-00a28cbf9590" message="----------------------------------Start Flow------------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber as String]" doc:name="accountNumber" doc:id="1356cc8e-4ca6-4746-9057-b67fe615a74f" variableName="accountNumber" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="99204273-324c-470b-b622-4696cbe364c4" variableName="inputpayload" />
+		<logger level="INFO" doc:name="Before DB" doc:id="9eff2310-be63-4303-9085-defb5648d771" message="-----------------Before DB------------" />
+		<snowflake:select doc:name="verify account" doc:id="cb67668b-491f-47d8-b900-f240a8b09288" config-ref="Snowflake_Config">
+			<snowflake:sql><![CDATA[select * from bank_customer_data where accountNumber = :ACCOUNTNUMBER]]></snowflake:sql>
+			<snowflake:input-parameters><![CDATA[#[{
+	"ACCOUNTNUMBER": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.FULLNAME]" doc:name="FULLNAME" doc:id="c5ce6a1d-3804-4a47-8f01-d72f40f67c63" variableName="FULLNAME" />
+		<logger level="INFO" doc:name="After DB" doc:id="600cf4e7-a02e-40c2-9622-3ffcdb688c3c" message="---------------After DB------------" />
+		<choice doc:name="Choice" doc:id="bd470158-4cbe-4358-aa0f-7266d3c72b95" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<ee:transform doc:name="Account doesn't exit" doc:id="9d050435-cf9c-4858-8c8b-9e113376e8d0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "Account doesn't exist please try with correct account number",
+	"accountNumber": vars.accountNumber
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="a00bc5f3-b37a-4c58-b13f-469b50e0d342" message="-------------End Flow----#[payload]" />
+			</when>
+			<otherwise >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="d2a2f194-3980-4bf0-97e2-1c7cf4b4c84e" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="8ea79a2f-4575-4203-9cd2-226fbf2225eb" variableName="bankname" />
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var data = if (payload is Array) payload[0] else payload&#10;&#10;fun getVal(v) =&#10;    if (v is Array) v[0]&#10;    else v default &quot;&quot;&#10;&#10;---&#10;&quot;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;  &lt;style&gt;&#10;    body {&#10;      font-family: Arial, sans-serif;&#10;      background-color: #f2f2f2;&#10;      margin: 0;&#10;      padding: 0;&#10;    }&#10;&#10;    .container {&#10;      width: 80%;&#10;      margin: auto;&#10;      background-color: #ffffff;&#10;      border-radius: 10px;&#10;      overflow: hidden;&#10;    }&#10;&#10;    .header {&#10;      background-color: #c0392b;&#10;      color: white;&#10;      text-align: center;&#10;      padding: 20px;&#10;    }&#10;&#10;    .content {&#10;      padding: 20px;&#10;      color: #333;&#10;    }&#10;&#10;    .box {&#10;      margin-top: 20px;&#10;      padding: 15px;&#10;      background-color: #f8d7da;&#10;      border-radius: 8px;&#10;      color: #721c24;&#10;    }&#10;&#10;    .footer {&#10;      text-align: center;&#10;      font-size: 12px;&#10;      color: red;&#10;      padding: 15px;&#10;    }&#10;  &lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;  &lt;div class='header'&gt;&#10;    &lt;h2&gt;🏦 Account Deactivated&lt;/h2&gt;&#10;  &lt;/div&gt;&#10;&#10;  &lt;div class='content'&gt;&#10;&#10;    &lt;p&gt;&#10;      Hi &lt;b&gt;&quot; ++ upper(getVal(vars.FULLNAME)) ++ &quot;&lt;/b&gt;,&#10;    &lt;/p&gt;&#10;&#10;    &lt;p&gt;&#10;      Your bank account has been &lt;b&gt;deactivated successfully&lt;/b&gt; in &#10;      &lt;b&gt;&quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/b&gt;.&#10;    &lt;/p&gt;&#10;&#10;    &lt;div class='box'&gt;&#10;      &lt;p&gt;&lt;b&gt;Account Number:&lt;/b&gt; &quot; ++ getVal(data.ACCOUNTNUMBER) ++ &quot;&lt;/p&gt;&#10;    &lt;/div&gt;&#10;&#10;    &lt;p&gt;&#10;      If this action was not performed by you, please contact customer support immediately.&#10;    &lt;/p&gt;&#10;&#10;  &lt;/div&gt;&#10;&#10;  &lt;div class='footer'&gt;&#10;    ⚠️ This is an automated email. Please do not reply.&#10;  &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="1240d080-f095-4390-9d3e-0052cc6e162c" variableName="emailBody" />
+				<parse-template doc:name="Parse Template" doc:id="ac8c59aa-0936-4a89-8e5f-a94c320ea41a" >
+					<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:name="email Send" doc:id="41cb5bea-91c8-4be4-8f01-d4b1271a76fd" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account deactived successfully in -" ++ vars.bankname]' >
+					<email:to-addresses >
+						<email:to-address value="#[vars.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<snowflake:delete doc:name="Delete account from db" doc:id="b6601321-f860-45d1-8060-4a780242733c" config-ref="Snowflake_Config" >
+					<snowflake:sql ><![CDATA[delete from bank_customer_data where ACCOUNTNUMBER = :accountNumber]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{
+	"accountNumber": vars.accountNumber
+}]]]></snowflake:input-parameters>
+				</snowflake:delete>
+				<ee:transform doc:name="response" doc:id="7bb0d33f-a156-4213-883b-121b27303ddc" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bank_account_detailes: {
+		"account_data": {
+			"message": "The account has been deactivated successfully, and an email has been sent to the user.",
+			"accountNumber": vars.accountNumber
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="f453f747-5b0c-4187-a2bc-79b0b26c2c49" message="#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="patch:\accounts\(accountNumber):application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="acbde1af-99f5-4225-8766-a4d84650ab2a" message="---------------------------Start Flow---------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber as String]" doc:name="accountNumber" doc:id="d5dd21ad-bac9-4b09-acaa-d479ba63c75d" variableName="accountNumber" />
+		<set-variable value="#[payload]" doc:name="inputpayload" doc:id="bd2ec271-76a5-4ea2-bc5d-88952ba02b39" variableName="inputpayload" />
+		<logger level="INFO" doc:name="Before DB" doc:id="a38ad841-ae71-4715-8b08-3b60d580d116" message="--------------Before DB-----------" />
+		<snowflake:select doc:name="Verify account in DB" doc:id="4b4af33f-5641-4252-9bf1-28a5633b819e" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data where accountnumber = :accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"accountNumber": vars.accountNumber
+	}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.FULLNAME]" doc:name="FULLNAME" doc:id="190f1631-0858-4e16-b3c3-2a29b0f189a4" variableName="FULLNAME" />
+		<logger level="INFO" doc:name="After DB" doc:id="8f098506-423a-4396-90fb-c31bd877138f" message="-------------------After DB-----------#[payload]" />
+		<choice doc:name="Choice" doc:id="d226788e-af09-4e45-911a-f29c73dcc1a0" >
+			<when expression="#[sizeOf(payload) == 1 and payload.FULLNAME[0] == vars.inputpayload.FullName and payload.MOBILENUMBER[0] == vars.inputpayload.mobileNumber and payload.ADDRESS[0] == vars.inputpayload.address]" >
+				<ee:transform doc:name="Account Existed" doc:id="41ccc359-2334-4e14-8405-a8af1a2887d9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    message: "Requested data is already updated with the same details",
+    accountNumber: vars.accountNumber,
+    account_data: {
+    	"fullname": payload.FULLNAME[0],
+    	"mobilenumber": payload.MOBILENUMBER[0],
+    	"address": payload.ADDRESS[0]
+    }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="b3ad01fc-80a4-43df-9557-3a02a51b3803" message="--------------------End Flow--------------#[payload]" />
+			</when>
+			<otherwise >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="29c73cf8-fc8a-40a6-9e7c-147eb4bdac91" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="BANKNAME" doc:id="bc1e0f98-f945-4cf8-8583-331af936960d" variableName="BANKNAME" />
+				<snowflake:update doc:name="Update requested data" doc:id="6caef84c-a86d-4096-b790-8da12ddf7299" config-ref="Snowflake_Config" target="dbresponse" >
+					<snowflake:sql ><![CDATA[UPDATE bank_customer_data
+SET FULLNAME =:FullName,
+    ADDRESS =:address,
+    MOBILENUMBER =:mobileNumber
+WHERE ACCOUNTNUMBER =:accountNumber]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	FullName: vars.inputpayload.FullName,
+	address: vars.inputpayload.address,
+	mobileNumber: vars.inputpayload.mobileNumber,
+	accountNumber: vars.accountNumber
+}]]]></snowflake:input-parameters>
+				</snowflake:update>
+				<ee:transform doc:name="After DB" doc:id="148fd3fb-d116-4b46-a0ce-1d8f51f5bf98" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;---&#10;&quot;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;  &lt;style&gt;&#10;    body {&#10;      font-family: Arial, sans-serif;&#10;      background-color: #f2f2f2;&#10;      margin: 0;&#10;      padding: 0;&#10;    }&#10;&#10;    .container {&#10;      width: 80%;&#10;      margin: auto;&#10;      background-color: #ffffff;&#10;      border-radius: 10px;&#10;      overflow: hidden;&#10;    }&#10;&#10;    .header {&#10;      background-color: #f39c12;&#10;      color: white;&#10;      text-align: center;&#10;      padding: 20px;&#10;    }&#10;&#10;    .content {&#10;      padding: 20px;&#10;      color: #333;&#10;    }&#10;&#10;    table {&#10;      width: 100%;&#10;      border-collapse: collapse;&#10;      margin-top: 20px;&#10;    }&#10;&#10;    th {&#10;      background-color: #f39c12;&#10;      color: white;&#10;      padding: 12px;&#10;      text-align: left;&#10;    }&#10;&#10;    td {&#10;      padding: 12px;&#10;      border: 1px solid #ddd;&#10;    }&#10;&#10;    .footer {&#10;      text-align: center;&#10;      font-size: 12px;&#10;      color: red;&#10;      padding: 15px;&#10;    }&#10;  &lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;  &lt;div class='header'&gt;&#10;    &lt;h2&gt;🏦 Account Updated Successfully&lt;/h2&gt;&#10;  &lt;/div&gt;&#10;&#10;  &lt;div class='content'&gt;&#10;&#10;    &lt;p&gt;&#10;      Hi &lt;b&gt;&quot; ++ (vars.inputpayload.FullName default &quot;Customer&quot;) ++ &quot;&lt;/b&gt;,&#10;    &lt;/p&gt;&#10;&#10;    &lt;p&gt;&#10;      Your bank account details have been updated successfully in &#10;      &lt;b&gt;&quot; ++ (vars.BANKNAME default &quot;Your Bank&quot;) ++ &quot;&lt;/b&gt;.&#10;    &lt;/p&gt;&#10;&#10;    &lt;table&gt;&#10;      &lt;tr&gt;&#10;        &lt;th&gt;Field&lt;/th&gt;&#10;        &lt;th&gt;Updated Details&lt;/th&gt;&#10;      &lt;/tr&gt;&#10;&#10;      &lt;tr&gt;&#10;        &lt;td&gt;Account Number&lt;/td&gt;&#10;        &lt;td&gt;&quot; ++ (vars.accountNumber default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;      &lt;/tr&gt;&#10;&#10;      &lt;tr&gt;&#10;        &lt;td&gt;Full Name&lt;/td&gt;&#10;        &lt;td&gt;&quot; ++ (vars.inputpayload.FullName default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;      &lt;/tr&gt;&#10;&#10;      &lt;tr&gt;&#10;        &lt;td&gt;Mobile Number&lt;/td&gt;&#10;        &lt;td&gt;&quot; ++ (vars.inputpayload.mobileNumber default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;      &lt;/tr&gt;&#10;&#10;      &lt;tr&gt;&#10;        &lt;td&gt;Address&lt;/td&gt;&#10;        &lt;td&gt;&quot; ++ (vars.inputpayload.address default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;      &lt;/tr&gt;&#10;&#10;    &lt;/table&gt;&#10;&#10;    &lt;p&gt;&#10;      If you did not request this update, please contact customer support immediately.&#10;    &lt;/p&gt;&#10;&#10;  &lt;/div&gt;&#10;&#10;  &lt;div class='footer'&gt;&#10;    ⚠️ This is an automated email. Please do not reply.&#10;  &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="10d230d5-4bba-42ac-a171-d6bf47fef2cf" variableName="emailBody" />
+				<parse-template doc:name="Parse Template" doc:id="9d009a33-1627-4e15-96f4-c081e6e362b3" >
+					<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:name="email Send" doc:id="aaedb348-93b2-424e-9076-69210fbedd71" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account detailes updated successfully - " ++ vars.BANKNAME]' >
+					<email:to-addresses >
+						<email:to-address value="#[vars.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<ee:transform doc:name="response" doc:id="f64b2819-fcb0-4f7c-b415-5e211ed76715" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bank_account_detailes: {
+		"account_data": {
+			"message": "The account has been updated successfully, and an email has been sent successfully.",
+			"accountNumber": vars.accountNumber,
+			"user_input_data": {
+				"data": vars.inputpayload
+			}
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="d1d568ac-4a4f-4342-91cb-93cbf0de19ba" message="-------------------End Flow----------------------#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+    <email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="6f583e7f-8e1b-49b3-a506-530b1e37ee1e">
+		<email:smtp-connection host="smtp.gmail.com" port="587" user="narsingbeesetti06@gmail.com" password="ajfq nryi lwjh zhev" >
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<flow name="get:\accounts:real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="4d63ac33-be85-4c4c-a361-84eba1bc2af0" message="-------------------------------Start Flow----------------------------------" />
+		<set-variable value="#[attributes.queryParams.status]" doc:name="status" doc:id="de41934a-3892-4178-a6fe-69a0e04d8560" variableName="status" />
+		<logger level="INFO" doc:name="Before DB" doc:id="6c44c049-e562-4a48-ad86-72e77ac9d857" message="-----------------Before DB--------------" />
+		<snowflake:select doc:name="verify account" doc:id="01c12f89-0365-4fd1-9eaa-dd54ad4ee0a6" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[SELECT * 
+FROM bank_customer_data 
+WHERE STATUS = :status]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{ status: vars.status }]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<logger level="INFO" doc:name="After DB" doc:id="d692a2b4-fe45-46de-912a-2565e7733a92" message="--------------After DB--------------" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="524206c1-7809-47e7-93fa-bb7c9e33375b" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="cbb3cfb5-892e-4db2-bd6e-411693997806" tracking:enable-default-events="true">
+			<when expression='#[vars.status == "INACTIVE"]'>
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="050b59fc-7353-49a1-87ef-d3e3a5692fc8" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="14c34d0c-488f-40cc-a81a-422919ccffe1" variableName="bankname" />
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var data = if (payload is Array) payload[0] else payload&#10;&#10;fun getVal(v) = &#10;    if (v is Array) v[0] &#10;    else v default &quot;&quot;&#10;&#10;---&#10;&quot;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;style&gt;&#10;  body {&#10;    font-family: Arial, sans-serif;&#10;    background-color: #f4f6f8;&#10;  }&#10;  .container {&#10;    width: 60%;&#10;    margin: auto;&#10;    background-color: #ffffff;&#10;    padding: 20px;&#10;    border-radius: 10px;&#10;  }&#10;  .header {&#10;    text-align: center;&#10;    background-color: #004481;&#10;    color: white;&#10;    padding: 15px;&#10;    border-radius: 10px 10px 0 0;&#10;  }&#10;  table {&#10;    width: 100%;&#10;    border-collapse: collapse;&#10;    margin-top: 20px;&#10;  }&#10;  th, td {&#10;    padding: 12px;&#10;    border: 1px solid #ddd;&#10;  }&#10;  th {&#10;    background-color: #004481;&#10;    color: white;&#10;  }&#10;  .footer {&#10;    text-align: center;&#10;    margin-top: 20px;&#10;    color: red;&#10;    font-size: 12px;&#10;  }&#10;&lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;  &lt;div class='header'&gt;&#10;    &lt;h2&gt;🏦 Welcome to - &quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/h2&gt;&#10;  &lt;/div&gt;&#10;&#10;  &lt;p&gt;&#10;    Hi &lt;b&gt;&quot; ++ upper(getVal(data.FULLNAME)) ++ &quot;&lt;/b&gt;,&lt;br/&gt;&lt;br/&gt;&#10;    Please find your bank account details below:&#10;  &lt;/p&gt;&#10;&#10;  &lt;table&gt;&#10;    &lt;tr&gt;&#10;      &lt;th&gt;Field&lt;/th&gt;&#10;      &lt;th&gt;Details&lt;/th&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Bank Name&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Account Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ACCOUNTNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Date of Birth&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.DATEOFBIRTH) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Mobile Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.MOBILENUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Email&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.EMAIL) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Aadhaar Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADHARNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Address&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADDRESS) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Status&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.STATUS) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Balance&lt;/td&gt;&#10;      &lt;td&gt;₹ &quot; ++ (getVal(data.BALANCE) as String) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;  &lt;/table&gt;&#10;&#10;  &lt;div class='footer'&gt;&#10;    ⚠️ This is an automated email. Please do not reply.&#10;  &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="de1feea6-821e-42b4-babf-f2dd060ff26f" variableName="emailBody" />
+				<parse-template doc:name="Parse Template" doc:id="066b7be7-a5ae-44be-b730-8e5613da1b8a" >
+					<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:name="Send" doc:id="4bb64c69-d42d-4ef8-96d8-df7c96e38a36" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Your Account detailes - " ++ vars.bankname as String]' >
+					<email:to-addresses >
+						<email:to-address value="#[vars.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<ee:transform doc:name="response" doc:id="2bf0d4ea-203b-4b6f-9b32-0a3186d2d104" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  bankDetails: {
+    account_data: {
+      status: "The account details email has been sent successfully to the user.",
+      data: vars.inputpayload map (item) -> item - "TRANSACTIONS"  }
+  }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="4a1f87b0-75c4-4b4f-b4b4-2b308e6e9505" message="----------------------------End Flow------------------------#[payload]" />
+			</when>
+			<when expression='#[vars.status == "ACTIVE"]'>
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="c483fe29-1dad-4785-8939-29b622f466ee" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="834b427c-09ed-47a7-a1de-aaa54bf67e09" variableName="bankname" />
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var data = if (payload is Array) payload[0] else payload&#10;&#10;fun getVal(v) = &#10;    if (v is Array) v[0] &#10;    else v default &quot;&quot;&#10;&#10;---&#10;&quot;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;style&gt;&#10;  body {&#10;    font-family: Arial, sans-serif;&#10;    background-color: #f4f6f8;&#10;  }&#10;  .container {&#10;    width: 60%;&#10;    margin: auto;&#10;    background-color: #ffffff;&#10;    padding: 20px;&#10;    border-radius: 10px;&#10;  }&#10;  .header {&#10;    text-align: center;&#10;    background-color: #004481;&#10;    color: white;&#10;    padding: 15px;&#10;    border-radius: 10px 10px 0 0;&#10;  }&#10;  table {&#10;    width: 100%;&#10;    border-collapse: collapse;&#10;    margin-top: 20px;&#10;  }&#10;  th, td {&#10;    padding: 12px;&#10;    border: 1px solid #ddd;&#10;  }&#10;  th {&#10;    background-color: #004481;&#10;    color: white;&#10;  }&#10;  .footer {&#10;    text-align: center;&#10;    margin-top: 20px;&#10;    color: red;&#10;    font-size: 12px;&#10;  }&#10;&lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;  &lt;div class='header'&gt;&#10;    &lt;h2&gt;🏦 Welcome to - &quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/h2&gt;&#10;  &lt;/div&gt;&#10;&#10;  &lt;p&gt;&#10;    Hi &lt;b&gt;&quot; ++ upper(getVal(data.FULLNAME)) ++ &quot;&lt;/b&gt;,&lt;br/&gt;&lt;br/&gt;&#10;    Please find your bank account details below:&#10;  &lt;/p&gt;&#10;&#10;  &lt;table&gt;&#10;    &lt;tr&gt;&#10;      &lt;th&gt;Field&lt;/th&gt;&#10;      &lt;th&gt;Details&lt;/th&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Bank Name&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Account Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ACCOUNTNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Date of Birth&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.DATEOFBIRTH) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Mobile Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.MOBILENUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Email&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.EMAIL) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Aadhaar Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADHARNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Address&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADDRESS) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Status&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.STATUS) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Balance&lt;/td&gt;&#10;      &lt;td&gt;₹ &quot; ++ (getVal(data.BALANCE) as String) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;  &lt;/table&gt;&#10;&#10;  &lt;div class='footer'&gt;&#10;    ⚠️ This is an automated email. Please do not reply.&#10;  &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="18069d1f-cae6-4255-8b4f-837d0517b73d" variableName="emailBody" />
+				<parse-template doc:name="Parse Template" doc:id="575db8d3-7771-4b88-9d75-f4e2a7db7385">
+					<content>&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:name="Send" doc:id="6ab8f241-b2ae-43a6-82e1-928ff3feb0a9" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Your Account detailes - " ++ vars.bankname as String]'>
+					<email:to-addresses>
+						<email:to-address value="#[vars.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<ee:transform doc:name="response" doc:id="cb18128a-0ab0-445f-8c15-a22d8e0da508">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  bankDetails: {
+    account_data: {
+      status: "The account details email has been sent successfully to the user.",
+      data: vars.inputpayload map (item) -> item - "TRANSACTIONS"  }
+  }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="3fcca54f-febb-4224-bdb8-1b9594ae5d9c" message="----------------------------End Flow------------------------#[payload]" />
+			</when>
+		</choice>
+    </flow>
+    <flow name="get:\accounts\(accountNumber)\transactions:real-bank-api-config">
+        <logger level="INFO" doc:name="start Transcation cal" doc:id="b53d080f-b41d-49a0-917a-bd7efbc53eff" message="------------start Transcation call----------"/>
+		<ee:transform doc:name="Before db" doc:id="4cb3485c-6ae3-42e0-adb0-a0f9cb957373">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<snowflake:select doc:name="retrive transaction data" doc:id="9fe74d74-447d-4fce-a2af-1348b88a0aa3" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[SELECT 
+    c.ACCOUNTNUMBER AS accountNumber,
+
+    t.value['transactionType']::string AS transactionType,
+
+    t.value['amount']::number AS amount,
+
+    t.value['balance']::number AS balance,
+
+    t.value['timestamp']::string AS timestamp
+
+FROM MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA c,
+     LATERAL FLATTEN(input => c.TRANSACTIONS) t
+
+WHERE c.ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"accountNumber": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<ee:transform doc:name="After DB" doc:id="8505801a-9c7b-4a7b-9810-ceacb035da51">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="output" doc:id="6260b715-ee93-4285-a495-8e9404f9f007" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((row) -> {
+    accountNumber: row.ACCOUNTNUMBER,
+    transactionType: row.TRANSACTIONTYPE,
+    amount: row.AMOUNT,
+    balance: row.BALANCE,
+    timestamp: row.TIMESTAMP
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f070b9c3-79bd-4e89-ba78-e858ef9a89f2" message="#[payload]"/>
+    </flow>
+    <flow name="get:\accounts\(accountNumber):real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="50f22c20-1b5a-4ec9-87d6-c78e32075947" message="-------------------------------Start Flow----------------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber]" doc:name="accountNumber" doc:id="e96cb634-ae07-48bb-b301-e1f1a7f5bbbf" variableName="accountNumber" />
+		<logger level="INFO" doc:name="inside cache" doc:id="99a6af03-23e4-4cbd-b362-b6c307545b22" message="-------------------inside cahe before DB--------------------------" />
+		<ee:cache doc:name="Cache" doc:id="b44a62f9-7c3f-4043-8e96-de0fe4554fbb" >
+			<logger level="INFO" doc:name="inside cache" doc:id="4458f96a-572d-4c11-83fb-7e2c65a2fa0a" message="-------------------inside cahe before DB--------------------------" />
+		</ee:cache>
+		<logger level="INFO" doc:name="Before DB" doc:id="e742961b-55cf-4da4-8ca7-317374a5e43b" message="-----------------Before DB--------------" />
+		<snowflake:select doc:name="verify account" doc:id="098c1f26-01c3-4d67-ad4e-386309152cfa" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from BANK_CUSTOMER_DATA where accountNumber = :account]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"account": vars.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<logger level="INFO" doc:name="After DB" doc:id="b82e9eea-085f-478d-9262-1972216febdf" message="--------------After DB--------------" />
+		<choice doc:name="Choice" doc:id="05380ac7-d5f3-4948-908f-9d4e2f18c753" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<ee:transform doc:name="Account not found" doc:id="c3efdbc3-503b-4459-9008-c8e635915021" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "Failed",
+  message: "We couldn’t find an account with the given account number. Please check and try again.",
+  accountNumber: vars.accountNumber
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="7cc45785-93a6-410c-bfe9-a58ba1b1a6c2" message="-------------End Flow-------------#[payload]" />
+			</when>
+			<otherwise >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="b09ad6a2-acd7-42d2-882f-3488fb70ff20" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="d90ec596-56fd-47a7-97f0-55bd1b4299f0" variableName="bankname" />
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var data = if (payload is Array) payload[0] else payload&#10;&#10;fun getVal(v) = &#10;    if (v is Array) v[0] &#10;    else v default &quot;&quot;&#10;&#10;---&#10;&quot;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;style&gt;&#10;  body {&#10;    font-family: Arial, sans-serif;&#10;    background-color: #f4f6f8;&#10;  }&#10;  .container {&#10;    width: 60%;&#10;    margin: auto;&#10;    background-color: #ffffff;&#10;    padding: 20px;&#10;    border-radius: 10px;&#10;  }&#10;  .header {&#10;    text-align: center;&#10;    background-color: #004481;&#10;    color: white;&#10;    padding: 15px;&#10;    border-radius: 10px 10px 0 0;&#10;  }&#10;  table {&#10;    width: 100%;&#10;    border-collapse: collapse;&#10;    margin-top: 20px;&#10;  }&#10;  th, td {&#10;    padding: 12px;&#10;    border: 1px solid #ddd;&#10;  }&#10;  th {&#10;    background-color: #004481;&#10;    color: white;&#10;  }&#10;  .footer {&#10;    text-align: center;&#10;    margin-top: 20px;&#10;    color: red;&#10;    font-size: 12px;&#10;  }&#10;&lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;  &lt;div class='header'&gt;&#10;    &lt;h2&gt;🏦 Welcome to - &quot; ++(vars.bankname default &quot;Your Bank&quot;) ++ &quot;&lt;/h2&gt;&#10;  &lt;/div&gt;&#10;&#10;  &lt;p&gt;&#10;    Hi &lt;b&gt;&quot; ++ upper(getVal(data.FULLNAME) default &quot;Customer&quot;) ++ &quot;&lt;/b&gt;,&lt;br/&gt;&lt;br/&gt;&#10;    Please find your bank account details below:&#10;  &lt;/p&gt;&#10;&#10;  &lt;table&gt;&#10;    &lt;tr&gt;&#10;      &lt;th&gt;Field&lt;/th&gt;&#10;      &lt;th&gt;Details&lt;/th&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Bank Name&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.BANKNAME) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Account Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ACCOUNTNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Date of Birth&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.DATEOFBIRTH) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Mobile Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.MOBILENUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Email&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.EMAIL) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Aadhaar Number&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADHARNUMBER) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;    &lt;tr&gt;&#10;      &lt;td&gt;Address&lt;/td&gt;&#10;      &lt;td&gt;&quot; ++ getVal(data.ADDRESS) ++ &quot;&lt;/td&gt;&#10;    &lt;/tr&gt;&#10;&#10;  &lt;/table&gt;&#10;&#10;  &lt;div class='footer'&gt;&#10;    ⚠️ This is an automated email. Please do not reply.&#10;  &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="5ac2fad8-ab44-491b-bb90-2f47fe097658" variableName="emailBody" />
+				<set-variable value="#[payload.STATUS[0]]" doc:name="status" doc:id="2143e959-bbcf-4133-a2b0-afa482187b94" variableName="status"/>
+				<parse-template doc:name="Parse Template" doc:id="922ce774-dfb8-4f0b-aa25-162d67695912" >
+					<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:name="email Send" doc:id="00adee29-d3fa-4b56-a962-1db0d5853700" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Your Account detailes -" ++ vars.bankname as String]' >
+					<email:to-addresses >
+						<email:to-address value="#[vars.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<ee:transform doc:name="response" doc:id="bc555714-67df-480e-96ea-de65a5f9dfac" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  bankDetails: {
+    account_data: {
+    	"status": "The account details email has been sent successfully to the user.",
+    	"accountNumber": vars.accountNumber,
+    	"bankName": vars.bankname,
+    	"email": vars.email,
+    	"status": vars.status		
+    }
+  }
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="910c898a-95e7-4401-8c47-214d60df5fa9" message="----------------------------End Flow------------------------#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+    <flow name="post:\accounts:application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="d2e91442-63b4-4a4b-8f0f-2b26714c7057" message="----------------------------Start Flow--------------------" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	adharNumber: attributes.queryParams.adharNumber,&#10;	bankName: attributes.queryParams.bankName&#10;}]" doc:name="inputAttributes" doc:id="21a90b2e-fa31-4c50-8bc1-58e1aaa76717" variableName="inputAttributes" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputPayload" doc:id="618b0913-b346-4d3c-a884-d7bcd3da8bc2" variableName="inputPayload" />
+		<logger level="INFO" doc:name="Before Choice" doc:id="39e9ffac-1483-4b9b-b5c5-cbda4a90bc1c" message="------------------Before Choice---------------" />
+		<choice doc:name="Choice" doc:id="52ca6e4a-b1d5-448a-95d9-e2587a9cf45d" >
+			<when expression="#[vars.inputPayload.address == null or vars.inputPayload.mobileNumber == null or vars.inputPayload.FullName == null or vars.inputPayload.dateOfBirth == null or vars.inputPayload.email == null]" >
+				<raise-error doc:name="Raise error" doc:id="9cccc68d-703d-4a90-8d52-02211a835201" type='"HTTP:INVALID_REQUEST" ' description='"REQUIRED_KEY_FIELDS_MISSING" ' />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Valid Data" doc:id="b6661d19-71a0-4c33-964c-e07a9ff0d6d7" message="'Valid Data'" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="inside cache" doc:id="0a463357-74ed-4cc8-809a-37231b0fce38" message="-------------------inside cahe before DB--------------------------" />
+		<ee:cache doc:name="Cache" doc:id="5ce08e4b-f2f8-4763-9619-5740f93c5b5a" >
+			<logger level="INFO" doc:name="inside cache" doc:id="17ca7156-450f-4033-8d3a-843b98c8cb31" message="-------------------inside cahe before DB--------------------------" />
+		</ee:cache>
+		<logger level="INFO" doc:name="Before DB" doc:id="953f6bf2-8512-4736-a09e-29ec4dcfd013" message="--------------Before DB-------------" />
+		<snowflake:select doc:id="bd1f08eb-3966-4919-9802-f7c16a9f9021" config-ref="Snowflake_Config" doc:name="verify account" >
+			<snowflake:sql ><![CDATA[SELECT ACCOUNTNUMBER
+FROM bank_customer_data
+WHERE email = :email
+   OR dateOfBirth = :dateOfBirth
+   OR adharNumber = :adharNumber;
+]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	"email": vars.inputPayload.email,
+	"dateOfBirth": vars.inputPayload.dateOfBirth,
+	"adharNumber": vars.inputAttributes.adharNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<ee:transform doc:name="After DB" doc:id="82961d98-7360-4e3d-9d71-3e7fb3d53f10" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload[0]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice1" doc:id="89fa89fe-a2c4-4fe0-a9ad-88d9dc4dc1ea" >
+			<when expression="#[!isEmpty(payload)]" >
+				<ee:transform doc:name="Account aready existed" doc:id="cc3a7aff-af74-4065-b390-5128cf5ba794" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bank_account_detailes": {
+		"account_status": {
+			"message": "Account data already exists in the database. Please try with new details. If you are a new customer, please validate your information."	
+		},
+		"account_data": {
+			"accountNumber": payload.ACCOUNTNUMBER,
+			"adharNumber": vars.inputAttributes.adharNumber,
+			"bankName": vars.inputAttributes.bankName
+		},
+		"input_data": {
+			"payload": vars.inputPayload
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="The customer account is already existed in DB" doc:id="7acf437f-05fc-47c6-9f94-c66f63a05907" message="----------------------------The customer account is already existed in DB--------------------------#[payload]" />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Account Number creation" doc:id="31d3cf04-665f-4cb9-81d5-833c42dfd75c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    accountNumber: (floor(random() * 10000) + 856974568600) as String
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[payload.accountNumber]" doc:name="accountNumber" doc:id="5b9849d3-9595-47b8-86e2-5d57a0313661" variableName="accountNumber" />
+				<logger level="INFO" doc:name="Before DB" doc:id="e6e614d5-5eba-4f3c-8602-f1871ec5f0fb" message="-------------------Before DB--------------" />
+				<snowflake:insert doc:id="e5895d48-29ad-4b17-8414-6149348fe994" config-ref="Snowflake_Config" doc:name="Insert data " >
+					<snowflake:sql ><![CDATA[insert into bank_customer_data(FullName,dateOfBirth,mobileNumber,bankName,email,address,adharNumber,accountNumber)
+values (:FullName, :dateOfBirth, :mobileNumber, :bankName, :email, :address, :adharNumber, :accountNumber);]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{
+	"FullName": vars.inputPayload.FullName,
+	"dateOfBirth": vars.inputPayload.dateOfBirth,
+	"mobileNumber": vars.inputPayload.mobileNumber,
+	"email": vars.inputPayload.email,
+	"address": vars.inputPayload.address,
+	"adharNumber": vars.inputAttributes.adharNumber,
+	"accountNumber": vars.accountNumber,
+	"bankName": vars.inputAttributes.bankName
+}]]]></snowflake:input-parameters>
+				</snowflake:insert>
+				<logger level="INFO" doc:name="After DB" doc:id="fc2ce2e6-a05c-48a4-9244-66afa4d7b27f" message="----------------------After DB------------------#[payload]" />
+				<set-variable value="#[%dw 2.0&#10;output text/plain&#10;&#10;---&#10;&quot;&#10;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;title&gt;Account Creation Confirmation&lt;/title&gt;&#10;&#10;&lt;style&gt;&#10;body{&#10;    margin:0;&#10;    padding:0;&#10;    background:#f4f6f9;&#10;    font-family:Arial, Helvetica, sans-serif;&#10;}&#10;&#10;.container{&#10;    max-width:700px;&#10;    margin:30px auto;&#10;    background:#ffffff;&#10;    border-radius:12px;&#10;    overflow:hidden;&#10;    box-shadow:0px 4px 12px rgba(0,0,0,0.15);&#10;}&#10;&#10;.header{&#10;    background:#004481;&#10;    color:white;&#10;    text-align:center;&#10;    padding:25px;&#10;}&#10;&#10;.header h1{&#10;    margin:0;&#10;    font-size:28px;&#10;}&#10;&#10;.content{&#10;    padding:30px;&#10;    color:#333;&#10;    line-height:1.8;&#10;}&#10;&#10;.success-box{&#10;    background:#e8f5e9;&#10;    border-left:5px solid #28a745;&#10;    padding:15px;&#10;    margin:20px 0;&#10;    border-radius:5px;&#10;}&#10;&#10;.section-title{&#10;    color:#004481;&#10;    font-size:20px;&#10;    font-weight:bold;&#10;    margin-top:20px;&#10;    margin-bottom:10px;&#10;}&#10;&#10;table{&#10;    width:100%;&#10;    border-collapse:collapse;&#10;}&#10;&#10;th{&#10;    background:#004481;&#10;    color:white;&#10;    padding:12px;&#10;    text-align:left;&#10;}&#10;&#10;td{&#10;    border:1px solid #ddd;&#10;    padding:12px;&#10;}&#10;&#10;tr:nth-child(even){&#10;    background:#f8f9fa;&#10;}&#10;&#10;.account-number{&#10;    color:#004481;&#10;    font-size:20px;&#10;    font-weight:bold;&#10;}&#10;&#10;.footer{&#10;    text-align:center;&#10;    padding:20px;&#10;    font-size:12px;&#10;    color:#666;&#10;    background:#f8f9fa;&#10;}&#10;&#10;.note{&#10;    margin-top:20px;&#10;    background:#fff3cd;&#10;    padding:15px;&#10;    border-radius:5px;&#10;    color:#856404;&#10;}&#10;&lt;/style&gt;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;    &lt;div class='header'&gt;&#10;        &lt;h1&gt;🏦 Welcome to &quot; ++ (vars.inputAttributes.bankName default &quot;Real Bank&quot;) ++ &quot;&lt;/h1&gt;&#10;    &lt;/div&gt;&#10;&#10;    &lt;div class='content'&gt;&#10;&#10;        &lt;p&gt;&#10;            Dear &lt;b&gt;&quot; ++ upper(vars.inputPayload.FullName default &quot;Customer&quot;) ++ &quot;&lt;/b&gt;,&#10;        &lt;/p&gt;&#10;&#10;        &lt;div class='success-box'&gt;&#10;            Your bank account has been created successfully.&#10;        &lt;/div&gt;&#10;&#10;        &lt;p&gt;&#10;            We are pleased to inform you that your account has been opened and is now active.&#10;        &lt;/p&gt;&#10;&#10;        &lt;div class='section-title'&gt;&#10;            Account Details&#10;        &lt;/div&gt;&#10;&#10;        &lt;table&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;th&gt;Field&lt;/th&gt;&#10;                &lt;th&gt;Details&lt;/th&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Account Number&lt;/td&gt;&#10;                &lt;td class='account-number'&gt;&#10;                    &quot; ++ (vars.accountNumber default &quot;N/A&quot;) ++ &quot;&#10;                &lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Customer Name&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputPayload.FullName default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Mobile Number&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputPayload.mobileNumber default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Email Address&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputPayload.email default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Aadhaar Number&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputAttributes.adharNumber default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Bank Name&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputAttributes.bankName default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Address&lt;/td&gt;&#10;                &lt;td&gt;&quot; ++ (vars.inputPayload.address default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Opening Balance&lt;/td&gt;&#10;                &lt;td&gt;₹0.00&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;            &lt;tr&gt;&#10;                &lt;td&gt;Account Status&lt;/td&gt;&#10;                &lt;td&gt;ACTIVE&lt;/td&gt;&#10;            &lt;/tr&gt;&#10;&#10;        &lt;/table&gt;&#10;&#10;        &lt;div class='note'&gt;&#10;            Please keep your account number secure and do not share sensitive banking information with anyone.&#10;        &lt;/div&gt;&#10;&#10;        &lt;p&gt;&#10;            Thank you for choosing us. We look forward to serving your banking needs.&#10;        &lt;/p&gt;&#10;&#10;    &lt;/div&gt;&#10;&#10;    &lt;div class='footer'&gt;&#10;        © 2026 Real Bank | Secure Banking Services&lt;br/&gt;&#10;        This is an automated email. Please do not reply.&#10;    &lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&#10;&quot;]" doc:name="emailBody" doc:id="4364620a-dc27-4b61-ba60-60e9818748f0" variableName="emailBody" />
+				<parse-template doc:name="Parse Template" doc:id="51b166bb-1bee-4285-936d-e0a8daf49aba" >
+					<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+				</parse-template>
+				<email:send doc:id="8f40d23e-a44e-4399-83b7-c633edd45ad9" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account created successfully in -" ++ vars.inputAttributes.bankName]' doc:name="email send">
+					<email:to-addresses >
+						<email:to-address value="#[vars.inputPayload.email]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+				<ee:transform doc:name="response" doc:id="333098e9-d6c1-4d30-bf65-aa92ac7feea1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bank_account_detailes: {
+		"account_data": {
+			"message": "Congratulations!, Your account has been created successfully, and an email has been sent to the user.",
+			"accountNumber": vars.accountNumber,
+			"user_input_data": {
+				"data": vars.inputPayload
+			}
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="5f89fca4-f3e6-4f91-b238-93a5edd1256d" message="-------------------End flow--------------#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+    <sub-flow name="real-bank-apiSub_Flow-deposit" doc:id="2d525f27-abf5-47fb-a665-007929a950e9" >
+		<logger level="INFO" doc:name="Before send an email" doc:id="928efe63-0e7c-489a-aeec-bbe3972e0b6a" message="--------------------------------------------Before send an email--------------------------------------#[payload]" />
+		<snowflake:select doc:name="Select" doc:id="ea9a7e65-df30-4d63-a586-d6cbd1beafe0" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[payload]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.BANKNAME[0]]" doc:name="BANKNAME" doc:id="7cd4f8aa-5a88-4e0d-ad1c-11da22e463b6" variableName="BANKNAME" />
+		<set-variable value="#[payload[0].BALANCE default 0]" doc:name="balance" doc:id="be120b8d-8163-484e-a947-eba38fe24ad8" variableName="balance"/>
+		<set-variable value="#[%dw 2.0&#10;output text/plain&#10;&#10;var account =&#10;    (payload filter ($.ACCOUNTNUMBER == vars.accountNumber))[0]&#10;        default {}&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;title&gt;Deposit Successful&lt;/title&gt;&#10;&lt;style&gt;&#10;body {&#10;    font-family: Arial, sans-serif;&#10;    background-color: #f4f6f9;&#10;    padding: 20px;&#10;}&#10;.container {&#10;    max-width: 600px;&#10;    margin: auto;&#10;    background: #ffffff;&#10;    padding: 25px;&#10;    border-radius: 10px;&#10;}&#10;.header {&#10;    background: #28a745;&#10;    color: white;&#10;    padding: 15px;&#10;    text-align: center;&#10;    border-radius: 8px;&#10;}&#10;.amount {&#10;    font-size: 28px;&#10;    color: #28a745;&#10;    font-weight: bold;&#10;}&#10;table {&#10;    width: 100%;&#10;    border-collapse: collapse;&#10;    margin-top: 20px;&#10;}&#10;td {&#10;    border: 1px solid #ddd;&#10;    padding: 10px;&#10;}&#10;.footer {&#10;    margin-top: 20px;&#10;    color: #666;&#10;    font-size: 12px;&#10;    text-align: center;&#10;}&#10;&lt;/style&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&lt;h2&gt;Deposit Successful&lt;/h2&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;p&gt;Dear Customer,&lt;/p&gt;&#10;&#10;&lt;p&gt;Your deposit transaction has been successfully credited.&lt;/p&gt;&#10;&#10;&lt;p class='amount'&gt;&#10;₹&quot; ++ ((vars.amount default 0) as String) ++ &quot;&#10;&lt;/p&gt;&#10;&#10;&lt;table&gt;&#10;&lt;tr&gt;&#10;&lt;td&gt;&lt;b&gt;Account Number&lt;/b&gt;&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (vars.accountNumber as String) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;&lt;b&gt;Transaction Type&lt;/b&gt;&lt;/td&gt;&#10;&lt;td&gt;DEPOSIT&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;&lt;b&gt;Available Balance&lt;/b&gt;&lt;/td&gt;&#10;&lt;td&gt;₹&quot; ++ ((account.BALANCE default 0) as String) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&lt;/table&gt;&#10;&#10;&lt;p&gt;&#10;Thank you for banking with us.&#10;&lt;/p&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;© Real Bank | Secure Banking Services&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&quot;]" doc:name="emailBody" doc:id="db34d5a1-5b91-442a-a659-1dfe3f79f789" variableName="emailBody" />
+		<parse-template doc:name="Parse Template" doc:id="8c08e399-2f9e-4d0d-affb-a4329f8ff966" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to #[vars.BANKNAME]&lt;/h1&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+    &lt;h6&gt;Note: This is an automated email. Please do not reply to this email.&lt;/h6&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</content>
+		</parse-template>
+		<email:send doc:name="Email Send deposit amount" doc:id="45ace11e-dbcf-48fe-8e00-9a674d617844" config-ref="Email_SMTP" fromAddress="narsingbeesetti006@gmail.com" subject='#["Amount Depoist is successful Today! " ++ vars.BANKNAME[0]]' >
+			<email:to-addresses >
+				<email:to-address value="#[vars.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" encoding="UTF-8"/>
+		</email:send>
+		<logger level="INFO" doc:name="email sent successfully" doc:id="1bb95dbf-ca07-49de-9a8b-f29fbfe575d8" message="----------------------------------------email sent successfully-----------------------------------------" />
+		<ee:transform doc:name="output" doc:id="4660392b-9003-4968-a223-ab337c7156d3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: "Amount deposited successfully done for the Account Number - " ++ vars.accountNumber,
+	'type': 'Deposit',
+	timestamp: now(),
+	balance: vars.balance default 0
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<flow name="post:\accounts\(accountNumber)\deposit:application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="API Start" doc:id="957e402c-20a4-4688-a88e-a5297d25ec9e" message="-----------------------------Deposit API triggred----------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber]" doc:name="accountNumber" doc:id="f4cdb850-4bbd-46ff-af5c-cf170de29d13" variableName="accountNumber" />
+		<set-variable value="#[(payload.amount default 0) as Number]" doc:name="amount" doc:id="01b89151-113f-4086-94bb-2b2ccf3a8db4" variableName="amount"/>
+		<snowflake:select doc:name="Verify account exist or not" doc:id="7ea28171-89a4-46b3-94b2-9e5564d48111" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data where accountNumber = :accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+  "accountNumber": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="7c605c1c-aacf-4554-b70d-29a9580a33a0" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="89a3e92d-0397-4e37-91b1-fd25699659c5" >
+			<when expression="#[sizeOf(payload) == 1]" >
+				<logger level="INFO" doc:name="record found" doc:id="61cf0009-6a5d-4bf6-a7fe-2944a1618e94" message="---------------------------------Record Found before DB update-------------------------------" />
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="bbe9c5eb-5e0b-4454-be6f-6f13da67c0ea" variableName="email" />
+				<set-variable value="#[payload]" doc:name="Before update DB" doc:id="2b68defb-9092-40e6-821f-3b2692ac5f98" variableName="Before  update DB" />
+				<snowflake:update doc:name="Update" doc:id="84c10c8d-0180-40ce-91d7-6403ac2e4595" config-ref="Snowflake_Config" >
+					<snowflake:sql ><![CDATA[UPDATE MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA
+SET
+    BALANCE = COALESCE(BALANCE, 0) + :amount,
+
+    TRANSACTIONS = ARRAY_APPEND(
+        COALESCE(TRANSACTIONS, ARRAY_CONSTRUCT()),
+        OBJECT_CONSTRUCT(
+            'accountNumber', ACCOUNTNUMBER,
+            'transactionType', 'DEPOSIT',
+            'amount', :amount,
+            'balanceAfterTransaction', COALESCE(BALANCE, 0) + :amount,
+            'timestamp', CURRENT_TIMESTAMP()
+        )
+    )
+
+WHERE ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{
+            accountNumber: vars.accountNumber,
+            amount: vars.amount
+        }]]]></snowflake:input-parameters>
+				</snowflake:update>
+				<set-variable value="#[payload]" doc:name="AFter DB" doc:id="2a02f1db-bc68-4e7a-8c88-42fcfa4e2f2c" variableName="AFter DB"/>
+				<choice doc:name="" doc:id="913366be-8585-491f-81f9-2fd74a685b70" >
+					<when expression="#[payload.affectedRows &gt;= 1]" >
+						<flow-ref doc:name="calling deposit flow" doc:id="e272fbe9-e6c8-46d4-81d1-ea87712afa6a" name="real-bank-apiSub_Flow-deposit" />
+						<logger level="INFO" doc:name="Logger" doc:id="a75df3ca-fe2d-47f5-9fcf-1cd040659d2c" message="----------------------End Deposite Flow------------------#[payload]-"/>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Update won't happend" doc:id="16adfab1-8ad5-4a11-9ef9-edabb26b4e8a" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: 
+    "Account is identified but Amount deposited failed for Account Number - " 
+    ++ vars.inputpayload.ACCOUNTNUMBER[0] as String
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="record not found" doc:id="f4d487ab-4a34-4fd5-af78-f643fce8a87c" message="---------------------------------Record not Found for the given input------------------------------" />
+				<ee:transform doc:name="output" doc:id="e5c94ec3-f2a9-4b1b-93fb-f3b78ee3aa33" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var accNo = vars.inputpayload.ACCOUNTNUMBER[0] as String
+var bank  = vars.inputpayload.BANKNAME[0] as String
+---
+{
+  errorCode: "ACCOUNT_NOT_FOUND",
+  message: "Your account number " ++ accNo ++ 
+           " does not exist in bank " ++ bank ++ 
+           ". Please try with a different account number."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+    <sub-flow name="real-bank-apiSub_Flow-withdraw" doc:id="7adec78d-2eb5-48bb-9ad5-76fc04c5451c" >
+		<logger level="INFO" doc:name="Before send an email" doc:id="08f6ecf4-bf59-4d42-abf4-b5197e43a598" message="--------------------------------------------Before send an email--------------------------------------#[payload]" />
+		<snowflake:select doc:name="Select" doc:id="0ccf619f-0d80-4aeb-b05b-4d006b06f541" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[payload]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload[0].BALANCE default 0]" doc:name="BALANCE" doc:id="b06d894c-65e0-459a-ac79-85f4d2904adc" variableName="BALANCE"/>
+		<set-variable value="#[payload.BANKNAME[0]]" doc:name="BANKNAME" doc:id="20d6ea35-1bf3-4c03-a4cc-0a21b1130d84" variableName="BANKNAME"/>
+		<set-variable value='#[%dw 2.0&#10;output text/plain&#10;&#10;var acc = vars.accountNumber&#10;var record = (payload filter ($.ACCOUNTNUMBER == acc))[0] default {}&#10;&#10;---&#10;"&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h2&gt;Debit Transaction Alert&lt;/h2&gt;&#10;&#10;&lt;p&gt;Dear Customer,&lt;/p&gt;&#10;&#10;&lt;p&gt;Your withdrawal transaction has been processed successfully.&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;Amount: ₹" ++ ((vars.amount default 0) as String) ++ "&#10;&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;Account Number: " ++ (vars.accountNumber as String) ++ "&#10;&lt;/p&gt;&#10;&#10;&lt;p&gt;&#10;Available Balance: ₹" ++ ((record.BALANCE default 0) as String) ++ "&#10;&lt;/p&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;"]' doc:name="emailBody" doc:id="cad6f647-d5bd-4b4e-9359-dad8eb718da0" variableName="emailBody" />
+		<parse-template doc:name="Parse Template" doc:id="bd6fb7fa-2bc8-48d6-a484-e6dbb7c5ef25" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to #[vars.BANKNAME]&lt;/h1&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+    &lt;h6&gt;Note: This is an automated email. Please do not reply to this email.&lt;/h6&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</content>
+		</parse-template>
+		<email:send doc:name="Email Send deposit amount" doc:id="23887b5e-6454-48c2-b9a5-748b4dc1d70f" config-ref="Email_SMTP" subject='#["Amount Withdraw is successful Today! " ++ vars.BANKNAME as String]' fromAddress="narsingbeesetti006@gmail.com">
+			<email:to-addresses >
+				<email:to-address value="#[vars.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" />
+		</email:send>
+		<logger level="INFO" doc:name="email sent successfully" doc:id="f87c64ea-3fda-4d62-a6e9-d24f167250e1" message="----------------------------------------email sent successfully-----------------------------------------#[payload]" />
+		<ee:transform doc:name="output" doc:id="34bc716c-dd61-45b5-b0e4-a034d6c51bb8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var acc = (vars.accountNumber as String)
+---
+{
+	amount: vars.amount,
+	status: "Amount debited successfully done for Account Number - " ++ vars.accountNumber as String,
+	time: now(),
+	'type': 'Withdraw',
+	balance: vars.balance default 0
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<flow name="post:\accounts\(accountNumber)\withdraw:application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="API Start" doc:id="421c2e05-508b-4801-9ccb-ee285eabcf31" message="-----------------------------Withdraw API triggred----------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber]" doc:name="accountNumber" doc:id="0bcc7dd1-aeb3-4c75-9f79-430f0f8e4499" variableName="accountNumber" />
+		<set-variable value="#[(payload.amount default 0) as Number]" doc:name="Set amount" doc:id="ac049003-5c5a-4cac-9c92-ada0c75a0bd1" variableName="amount"/>
+		<snowflake:select doc:name="Verify account exist or not" doc:id="38653017-73bc-4580-9982-ed4329626c0e" config-ref="Snowflake_Config">
+				<snowflake:sql><![CDATA[select * from bank_customer_data where accountNumber = :accountNumber]]></snowflake:sql>
+				<snowflake:input-parameters><![CDATA[#[{
+  "accountNumber": vars.accountNumber
+  }]]]></snowflake:input-parameters>
+			</snowflake:select>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="11f59d2d-0a9b-4330-a538-caff56bac181" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="b0dc2dff-7c36-4e6b-ad9c-3519c9fb0b2d" >
+			<when expression="#[sizeOf(payload) &gt; 0]" >
+				<logger level="INFO" doc:name="record found" doc:id="daf05ec0-b2bd-4e0c-b681-e9513071ebad" message="---------------------------------Record Found before DB update-------------------------------" />
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="908d734b-d971-4d57-8172-933bb0d4968b" variableName="email" />
+				<logger level="INFO" doc:name="Before Update" doc:id="45252099-e3a0-46a7-9757-0ebf5badfee7" message="------------------Before Update withdraw Flow-------------"/>
+				<snowflake:update doc:name="Update" doc:id="482c7f1c-3d99-45a5-891d-df5b9313b7df" config-ref="Snowflake_Config">
+					<snowflake:sql><![CDATA[UPDATE MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA
+SET
+    BALANCE = COALESCE(BALANCE, 0) - :amount,
+
+    TRANSACTIONS = ARRAY_APPEND(
+        COALESCE(TRANSACTIONS, ARRAY_CONSTRUCT()),
+        OBJECT_CONSTRUCT(
+            'accountNumber', ACCOUNTNUMBER,
+            'transactionType', 'WITHDRAW',
+            'amount', :amount,
+            'balanceAfterTransaction', COALESCE(BALANCE, 0) - :amount,
+            'timestamp', CURRENT_TIMESTAMP()
+        )
+    )
+
+WHERE ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+					<snowflake:input-parameters><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+                    amount: vars.amount,
+                    accountNumber: vars.accountNumber
+                }]]]></snowflake:input-parameters>
+				</snowflake:update>
+				<logger level="INFO" doc:name="After Update" doc:id="0ab3773a-e26d-40fa-8820-573cce589cde" message="-------------------------After Update withdraw Flow-----------------#[payload]"/>
+				<choice doc:name="" doc:id="c548f07a-48cf-4fdf-b6d5-35b6ddf07452" >
+					<when expression="#[((payload.updateCount default payload.affectedRows default 0) as Number) &gt; 0]" >
+						<flow-ref doc:name="call withdraw email flow" doc:id="a9f5ea3c-43c5-484f-bc9b-b60c6ac674c9" name="real-bank-apiSub_Flow-withdraw" targetValue="#[vars.email]"/>
+						<logger level="INFO" doc:name="Logger" doc:id="8ec3b57d-2a82-4bee-99f0-da8a95868a18" message="--------------------End Withdraw flow------------#[payload]"/>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Update won't happend" doc:id="05bed23e-342c-4ceb-bff9-0d94af58244c" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	amount: vars.amount,
+	timestamp: payload.CREATED_AT as String default "",
+	status: "Account is identified but Amount withdraw failed for Account Number - " ++ vars.inputpayload.ACCOUNTNUMBER[0] as String
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="record not found" doc:id="d5cb826e-3e5f-45f3-ad02-eb7f6586c249" message="---------------------------------Record not Found for the given input------------------------------" />
+				<ee:transform doc:name="output" doc:id="ac0ffe5b-908e-4312-b053-a6c905a9ebff" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var accNo = vars.inputpayload.ACCOUNTNUMBER[0] as String
+var bank  = vars.inputpayload.BANKNAME[0] as String
+---
+{
+  errorCode: "ACCOUNT_NOT_FOUND",
+  message: "Your account number " ++ accNo ++ 
+           " does not exist in bank " ++ bank ++ 
+           ". Please try with a different account number."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+</mule>
