@@ -1,0 +1,32 @@
+[
+  {
+    "CUSTOMER_ID": 33,
+    "FULLNAME": "Carlo Achaval",
+    "DATEOFBIRTH": "2005-04-16",
+    "MOBILENUMBER": "unde",
+    "BANKNAME": "Albina",
+    "EMAIL": "Coy.Smithin@gmail.com",
+    "ADDRESS": "Scaramento St 90",
+    "ADHARNUMBER": "rem",
+    "ACCOUNTNUMBER": "quis",
+    "TRANSACTIONS": "sit",
+    "STATUS": "aliqua.",
+    "CREATED_AT": "2012-04-27",
+    "BALANCE": "consequuntur"
+  },
+  {
+    "CUSTOMER_ID": 10,
+    "FULLNAME": "Clemente Daviot",
+    "DATEOFBIRTH": "2003-10-10",
+    "MOBILENUMBER": "fugiat",
+    "BANKNAME": "Clifford",
+    "EMAIL": "Cordell.Smogur@gmail.com",
+    "ADDRESS": "Second Ave 68",
+    "ADHARNUMBER": "eum",
+    "ACCOUNTNUMBER": "in",
+    "TRANSACTIONS": "omnis",
+    "STATUS": "Excepteur",
+    "CREATED_AT": "2012-11-05",
+    "BALANCE": "corporis"
+  }
+]
