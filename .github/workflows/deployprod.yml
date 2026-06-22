@@ -32,11 +32,47 @@ jobs:
 
   call-mule-deploy-non-prod:
 
-    uses: Narsing-s/real-bank-api/.github/workflows/sandbox.yml@v1.0.0
+    uses: #
+
+# This action is triggered manually. Either a specific release tag to deploy to production is specified or the
+
+# latest release will be deployed.
+
+#
+
+# 
+
+name: "Deploy Release to PROD"
+
+# Controls when the action will run.
+
+on:
+
+  workflow_dispatch:
+
+    inputs:
+
+      release_number:
+
+        description: 'Version to Release (Ex: v1.0.0). Default is LATEST.'
+
+        required: false
+
+        default: 'LATEST'
+
+# call the common flow
+
+jobs:
+
+  call-mule-deploy-non-prod:
+
+    uses: Narsing-s/real-bank-api/.github/workflows/sandbox.yml@main
 
     secrets: inherit
 
     with:
+
+      release_version: ${{ github.event.inputs.release_number }}
 
       repoName: "Narsing-s/real-bank-api"
 
@@ -72,4 +108,46 @@ jobs:
 
       westb_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}'
 
-      east_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}'
+      east_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}' valuidate 
+
+    secrets: inherit
+
+    with:
+
+      release_version: ${{ github.event.inputs.release_number }}
+
+      repoName: "Narsing-s/real-bank-api"
+
+      ref: "main"
+
+      business_group_name: "mule"
+
+      app_mule_environment: "prod2"
+
+      secrets_environment: "PROD2"
+
+      regions: "az_west=active,az_east=passive,az_westb=active"
+
+      api_name: "real-bank-api"
+
+      root_context: "/mule/"
+
+      api_type: "internal"
+
+      cicd_enabled: "true"
+
+      #####-----> application resource configuration <-----#####
+
+      app_cpu_init: "200m"
+
+      app_cpu_max: "1000m"
+
+      app_init_memory: "1024Mi"
+
+      app_max_memory: "2048Mi"
+
+      west_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}'
+
+      westb_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}'
+
+      east_custom_properties: '{"logging.level.org.mule.extension.jsonlogger":"WARN"}' valuidate 
