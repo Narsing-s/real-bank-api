@@ -167,117 +167,203 @@ gap:20px;
 
 <script>
 
-const BASE_URL = "https://real-bank-api-jik9pb.5sc6y6-3.usa-e2.cloudhub.io/api/";
+const BASE_URL = "https://real-bank-api-jik9pb.5sc6y6-3.usa-e2.cloudhub.io/api";
 
-function show(data){
-document.getElementById("response").textContent =
-JSON.stringify(data,null,2);
+function show(data) {
+    document.getElementById("response").textContent =
+        typeof data === "string"
+            ? data
+            : JSON.stringify(data, null, 2);
 }
 
-async function createAccount(){
+async function handleResponse(res) {
 
-const body = {
-FullName: document.getElementById("fullName").value,
-mobileNumber: document.getElementById("mobileNumber").value,
-email: document.getElementById("email").value,
-dateOfBirth: document.getElementById("dob").value,
-address: document.getElementById("address").value
-};
+    const responseDiv =
+        document.getElementById("response");
 
-const adharNumber =
-document.getElementById("adharNumber").value;
+    try {
 
-const bankName =
-document.getElementById("bankName").value;
+        console.log("HTTP Status:", res.status);
 
-const res = await fetch(
-`${BASE_URL}/accounts?adharNumber=${adharNumber}&bankName=${bankName}`,
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(body)
-});
+        if (res.status === 204) {
+            responseDiv.textContent =
+                JSON.stringify({
+                    success: true,
+                    message: "Operation completed successfully"
+                }, null, 2);
+            return;
+        }
 
-show(await res.json());
+        const text = await res.text();
+
+        console.log("Response Body:", text);
+
+        if (!text) {
+            responseDiv.textContent =
+                "No response body returned";
+            return;
+        }
+
+        try {
+            const json = JSON.parse(text);
+            responseDiv.textContent =
+                JSON.stringify(json, null, 2);
+        } catch {
+            responseDiv.textContent = text;
+        }
+
+    } catch (e) {
+        responseDiv.textContent =
+            "Error: " + e.message;
+    }
 }
 
-async function getAccount(){
+async function createAccount() {
 
-const acc =
-document.getElementById("getAccNo").value;
+    try {
 
-const res = await fetch(
-`${BASE_URL}/accounts/${acc}`
-);
+        const body = {
+            FullName: document.getElementById("fullName").value,
+            mobileNumber: document.getElementById("mobileNumber").value,
+            email: document.getElementById("email").value,
+            dateOfBirth: document.getElementById("dob").value,
+            address: document.getElementById("address").value
+        };
 
-show(await res.json());
+        const adharNumber =
+            document.getElementById("adharNumber").value;
+
+        const bankName =
+            document.getElementById("bankName").value;
+
+        const res = await fetch(
+            `${BASE_URL}/accounts?adharNumber=${encodeURIComponent(adharNumber)}&bankName=${encodeURIComponent(bankName)}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            }
+        );
+
+        await handleResponse(res);
+
+    } catch (err) {
+        show("Error: " + err.message);
+    }
 }
 
-async function getByStatus(){
+async function getAccount() {
 
-const status =
-document.getElementById("status").value;
+    try {
 
-const res = await fetch(
-`${BASE_URL}/accounts?status=${status}`
-);
+        const acc =
+            document.getElementById("getAccNo").value;
 
-show(await res.json());
+        const res = await fetch(
+            `${BASE_URL}/accounts/${acc}`
+        );
+
+        await handleResponse(res);
+
+    } catch (err) {
+
+        document.getElementById("response").textContent =
+            "Error: " + err.message;
+    }
 }
 
-async function updateAccount(){
+async function getByStatus() {
 
-const acc =
-document.getElementById("updateAccNo").value;
+    try {
 
-const body = {
-FullName: document.getElementById("updateName").value,
-mobileNumber: document.getElementById("updateMobile").value,
-address: document.getElementById("updateAddress").value
-};
+        const status =
+            document.getElementById("status").value;
 
-const res = await fetch(
-`${BASE_URL}/accounts/${acc}`,
-{
-method:"PATCH",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify(body)
-});
+        const res = await fetch(
+            `${BASE_URL}/accounts?status=${status}`
+        );
 
-show(await res.json());
+        await handleResponse(res);
+
+    } catch (err) {
+        show("Error: " + err.message);
+    }
 }
 
-async function deleteAccount(){
+async function updateAccount() {
 
-const acc =
-document.getElementById("deleteAccNo").value;
+    try {
 
-const res = await fetch(
-`${BASE_URL}/accounts/${acc}`,
-{
-method:"DELETE"
-});
+        const acc =
+            document.getElementById("updateAccNo").value;
 
-show(await res.json());
+        const body = {
+            FullName: document.getElementById("updateName").value,
+            mobileNumber: document.getElementById("updateMobile").value,
+            address: document.getElementById("updateAddress").value
+        };
+
+        const res = await fetch(
+            `${BASE_URL}/accounts/${acc}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            }
+        );
+
+        await handleResponse(res);
+
+    } catch (err) {
+        show("Error: " + err.message);
+    }
 }
 
-async function getTransactions(){
+async function deleteAccount() {
 
-const acc =
-document.getElementById("txnAccNo").value;
+    try {
 
-const res = await fetch(
-`${BASE_URL}/accounts/${acc}/transactions`
-);
+        const acc =
+            document.getElementById("deleteAccNo").value;
 
-show(await res.json());
+        const res = await fetch(
+            `${BASE_URL}/accounts/${acc}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        await handleResponse(res);
+
+    } catch (err) {
+        show("Error: " + err.message);
+    }
+}
+
+async function getTransactions() {
+
+    try {
+
+        const acc =
+            document.getElementById("txnAccNo").value;
+
+        const res = await fetch(
+            `${BASE_URL}/accounts/${acc}/transactions`
+        );
+
+        await handleResponse(res);
+
+    } catch (err) {
+        show("Error: " + err.message);
+    }
 }
 
 </script>
+
 
 </body>
 </html>
