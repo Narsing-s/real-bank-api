@@ -1,0 +1,8 @@
+{
+  "endpoints": {
+    "/api/accounts": {
+      "post": "import { CreateAccountCopyRequest, RealBankApiAutoSdk } from 'real-bank-api-auto-sdk';\n\n(async () => {\n  const realBankApiAutoSdk = new RealBankApiAutoSdk({});\n\n  \n  const createAccountCopyRequest: CreateAccountCopyRequest = {\t\n    fullName: \"{{FullName}}\",\n    dateOfBirth: \"{{dateOfBirth}}\",\n    mobileNumber: \"{{mobileNumber}}\",\n    email: \"{{email}}\",\n    address: \"{{address}}\"\n  };\n\n  const data = await realBankApiAutoSdk.realBankApiAutoSdk.createAccountCopy(\n  createAccountCopyRequest,\n  {\n      adharNumber: \"{{adharNumber}}\",\n      bankName: \"{{bankName}}\",\n  }\n);\n\n  console.log(data);\n})();\n"
+    }
+  },
+  "example": "import { CreateAccountCopyRequest, RealBankApiAutoSdk } from 'real-bank-api-auto-sdk';\n\n(async () => {\n  const realBankApiAutoSdk = new RealBankApiAutoSdk({});\n\n  \n  const createAccountCopyRequest: CreateAccountCopyRequest = {\t\n    fullName: \"{{FullName}}\",\n    dateOfBirth: \"{{dateOfBirth}}\",\n    mobileNumber: \"{{mobileNumber}}\",\n    email: \"{{email}}\",\n    address: \"{{address}}\"\n  };\n\n  const data = await realBankApiAutoSdk.realBankApiAutoSdk.createAccountCopy(\n  createAccountCopyRequest,\n  {\n      adharNumber: \"{{adharNumber}}\",\n      bankName: \"{{bankName}}\",\n  }\n);\n\n  console.log(data);\n})();\n"
+}
