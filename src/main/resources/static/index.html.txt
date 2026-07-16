@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real Bank Assistant</title>
+
+<style>
+
+body{
+font-family:Segoe UI;
+margin:0;
+background:#f5f7fa;
+}
+
+header{
+background:#0b4da2;
+color:white;
+padding:20px;
+font-size:28px;
+font-weight:bold;
+}
+
+.container{
+width:420px;
+margin:50px auto;
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+button{
+width:100%;
+padding:15px;
+font-size:18px;
+background:#0b4da2;
+color:white;
+border:none;
+border-radius:10px;
+cursor:pointer;
+margin-top:20px;
+}
+
+.chat{
+display:none;
+margin-top:20px;
+border:1px solid #ddd;
+height:350px;
+}
+
+.chat-header{
+background:#0b4da2;
+color:white;
+padding:15px;
+}
+
+.chat-body{
+height:250px;
+overflow:auto;
+padding:15px;
+background:#fafafa;
+}
+
+.message{
+padding:10px;
+margin-bottom:10px;
+background:#eeeeee;
+border-radius:8px;
+}
+
+input{
+width:100%;
+padding:15px;
+border:none;
+border-top:1px solid #ddd;
+font-size:16px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+🏦 Real Bank Assistant
+
+</header>
+
+<div class="container">
+
+<h2>Digital Banking</h2>
+
+<p>
+
+Type
+
+<b>balance</b>
+
+or
+
+<b>accountdetails</b>
+
+or
+
+<b>ministatement</b>
+
+</p>
+
+<button onclick="openChat()">
+
+Start Assistant
+
+</button>
+
+<div class="chat" id="chat">
+
+<div class="chat-header">
+
+🤖 Real Bank Bot
+
+</div>
+
+<div class="chat-body" id="chatBody">
+
+<div class="message">
+
+Hello 👋
+
+</div>
+
+</div>
+
+<input
+id="userInput"
+placeholder="Type message..."
+onkeypress="sendMessage(event)"
+>
+
+</div>
+
+</div>
+
+<script>
+
+const MULE_URL="http://localhost:8081/assistance/whatsapp";
+
+function openChat(){
+
+document.getElementById("chat").style.display="block";
+
+}
+
+async function sendMessage(event){
+
+if(event.key!="Enter") return;
+
+let input=document.getElementById("userInput");
+
+let msg=input.value;
+
+if(msg=="") return;
+
+let body=document.getElementById("chatBody");
+
+body.innerHTML+=`<div class="message">👤 ${msg}</div>`;
+
+input.value="";
+
+try{
+
+let response=await fetch(MULE_URL,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+mobileNumber:"9876543210",
+
+message:msg
+
+})
+
+});
+
+let data=await response.json();
+
+body.innerHTML+=`<div class="message">🤖 ${JSON.stringify(data)}</div>`;
+
+body.scrollTop=body.scrollHeight;
+
+}catch(e){
+
+body.innerHTML+=`<div class="message">Connection Failed</div>`;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>

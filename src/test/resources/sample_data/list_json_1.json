@@ -1,0 +1,32 @@
+[
+  {
+    "CUSTOMER_ID": 10,
+    "FULLNAME": "Alfreda Davley",
+    "DATEOFBIRTH": "2006-09-17",
+    "MOBILENUMBER": "laborum.",
+    "BANKNAME": "Charles",
+    "EMAIL": "Adela.Alishoner@gmail.com",
+    "ADDRESS": "Scaramento St 91",
+    "ADHARNUMBER": "velit",
+    "ACCOUNTNUMBER": "eiusmod",
+    "TRANSACTIONS": "fugiat",
+    "STATUS": "eiusmod",
+    "CREATED_AT": "2002-02-07",
+    "BALANCE": "ad"
+  },
+  {
+    "CUSTOMER_ID": 97,
+    "FULLNAME": "Alona Smithies",
+    "DATEOFBIRTH": "2011-11-26",
+    "MOBILENUMBER": "quia",
+    "BANKNAME": "Analisa",
+    "EMAIL": "Alan.Allain@gmail.com",
+    "ADDRESS": "Castro St 84",
+    "ADHARNUMBER": "non",
+    "ACCOUNTNUMBER": "sed",
+    "TRANSACTIONS": "quasi",
+    "STATUS": "veniam,",
+    "CREATED_AT": "2014-11-13",
+    "BALANCE": "quae"
+  }
+]
