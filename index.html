@@ -2,368 +2,71 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Real Bank Portal</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real Bank AI Assistant</title>
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI,Arial,sans-serif;
-}
-
-body{
-background:#0b1020;
-color:white;
-padding:20px;
-}
-
-.container{
-max-width:1200px;
-margin:auto;
-}
-
-h1{
-text-align:center;
-margin-bottom:20px;
-color:#00d4ff;
-}
-
-.card{
-background:#131c31;
-padding:20px;
-border-radius:15px;
-margin-bottom:20px;
-box-shadow:0 0 10px rgba(0,212,255,.2);
-}
-
-h2{
-margin-bottom:15px;
-color:#00d4ff;
-}
-
-input,select,textarea{
-width:100%;
-padding:10px;
-margin:8px 0;
-border:none;
-border-radius:8px;
-}
-
-button{
-padding:10px 20px;
-background:#00d4ff;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-}
-
-button:hover{
-background:#00b7dd;
-}
-
-pre{
-background:#000;
-padding:15px;
-border-radius:10px;
-overflow:auto;
-margin-top:15px;
-white-space:pre-wrap;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-gap:20px;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{background:linear-gradient(135deg,#071b3d,#0f6ab8 45%,#eef5ff);min-height:100vh;color:#fff}
+nav{display:flex;justify-content:space-between;align-items:center;padding:24px 8%}
+.logo{font-size:30px;font-weight:800}
+.hero{display:flex;flex-wrap:wrap;gap:40px;align-items:center;justify-content:space-between;padding:5% 8%}
+.left{max-width:560px}
+.badge{display:inline-block;background:#22c55e;color:#fff;padding:8px 16px;border-radius:30px;margin-bottom:20px}
+h1{font-size:56px;line-height:1.1}
+p{margin-top:20px;color:#d8e7ff;line-height:1.7}
+.btn{display:inline-block;margin-top:28px;padding:16px 28px;border-radius:14px;background:#00b4ff;color:#fff;text-decoration:none;font-weight:700}
+.panel{width:380px;background:rgba(255,255,255,.12);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:24px}
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;padding:0 8% 70px}
+.card{background:#fff;color:#1b2b3a;border-radius:18px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.15);transition:.3s}
+.card:hover{transform:translateY(-8px)}
+.chat{position:fixed;right:25px;bottom:25px;width:360px;background:#fff;color:#222;border-radius:20px;overflow:hidden;display:none;box-shadow:0 18px 40px rgba(0,0,0,.3)}
+.chat-head{background:#0b5fff;color:#fff;padding:18px;font-weight:700}
+.chat-body{height:320px;overflow:auto;padding:15px;background:#f7f9fc}
+.msg{background:#e8f1ff;padding:10px;border-radius:10px;margin-bottom:10px}
+input{width:100%;padding:14px;border:none;border-top:1px solid #ddd}
+footer{text-align:center;padding:25px;background:#071b3d}
 </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<h1>🏦 Real Bank Management Portal</h1>
-
-<div class="grid">
-
-<!-- CREATE ACCOUNT -->
-<div class="card">
-<h2>Create Account</h2>
-
-<input id="fullName" placeholder="Full Name">
-<input id="mobileNumber" placeholder="Mobile Number">
-<input id="email" placeholder="Email">
-<input id="dob" placeholder="Date Of Birth">
-<input id="address" placeholder="Address">
-
-<input id="adharNumber" placeholder="Aadhar Number">
-<input id="bankName" placeholder="Bank Name">
-
-<button onclick="createAccount()">Create Account</button>
+<nav><div class="logo">🏦 Real Bank</div><div>AI Banking Platform</div></nav>
+<section class="hero">
+<div class="left">
+<div class="badge">✓ AI Powered Banking</div>
+<h1>Modern Digital Banking Experience</h1>
+<p>Check balance, account details, mini statement and connect to your MuleSoft APIs through a modern banking interface.</p>
+<a class="btn" href="#" onclick="openChat()">Launch Assistant</a>
 </div>
-
-<!-- GET ACCOUNT -->
-<div class="card">
-<h2>Get Account</h2>
-
-<input id="getAccNo" placeholder="Account Number">
-
-<button onclick="getAccount()">Get Account</button>
+<div class="panel">
+<h2>Assistant Features</h2><br>
+<p>💳 Account Details<br>💰 Balance Check<br>📄 Mini Statement<br>🤖 AI Chat Assistant</p>
 </div>
-
-<!-- GET BY STATUS -->
-<div class="card">
-<h2>Get Accounts By Status</h2>
-
-<select id="status">
-<option value="ACTIVE">ACTIVE</option>
-<option value="INACTIVE">INACTIVE</option>
-</select>
-
-<button onclick="getByStatus()">Search</button>
+</section>
+<section class="services">
+<div class="card"><h3>💳 Account</h3><p>View secure account information.</p></div>
+<div class="card"><h3>💰 Balance</h3><p>Real-time balance lookup.</p></div>
+<div class="card"><h3>📄 Statement</h3><p>Recent transactions.</p></div>
+<div class="card"><h3>🤖 AI Support</h3><p>24×7 customer support.</p></div>
+</section>
+<div class="chat" id="chat">
+<div class="chat-head">🤖 Real Bank Assistant</div>
+<div class="chat-body" id="chatBody"><div class="msg">Welcome! Type <b>balance</b>, <b>accountdetails</b>, or <b>ministatement</b>.</div></div>
+<input id="userInput" placeholder="Type message..." onkeypress="sendMessage(event)">
 </div>
-
-<!-- UPDATE ACCOUNT -->
-<div class="card">
-<h2>Update Account</h2>
-
-<input id="updateAccNo" placeholder="Account Number">
-<input id="updateName" placeholder="Full Name">
-<input id="updateMobile" placeholder="Mobile Number">
-<input id="updateAddress" placeholder="Address">
-
-<button onclick="updateAccount()">Update</button>
-</div>
-
-<!-- DELETE ACCOUNT -->
-<div class="card">
-<h2>Delete Account</h2>
-
-<input id="deleteAccNo" placeholder="Account Number">
-
-<button onclick="deleteAccount()">Delete</button>
-</div>
-
-<!-- TRANSACTIONS -->
-<div class="card">
-<h2>Transactions</h2>
-
-<input id="txnAccNo" placeholder="Account Number">
-
-<button onclick="getTransactions()">Get Transactions</button>
-</div>
-
-</div>
-
-<div class="card">
-<h2>API Response</h2>
-<pre id="response">Response will appear here...</pre>
-</div>
-
-</div>
-
+<footer>© 2026 Real Bank</footer>
 <script>
-
-const BASE_URL = "https://real-bank-api-jik9pb.5sc6y6-3.usa-e2.cloudhub.io/api";
-
-function show(data) {
-    document.getElementById("response").textContent =
-        typeof data === "string"
-            ? data
-            : JSON.stringify(data, null, 2);
+const MULE_URL="http://localhost:8081/assistance/whatsapp";
+function openChat(){document.getElementById("chat").style.display="block";}
+async function sendMessage(e){
+ if(e.key!=="Enter")return;
+ const i=document.getElementById("userInput");const m=i.value.trim();if(!m)return;
+ const b=document.getElementById("chatBody");
+ b.innerHTML+=`<div class="msg">👤 ${m}</div>`;i.value="";
+ try{
+ const r=await fetch(MULE_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mobileNumber:"9876543210",message:m})});
+ const d=await r.json();
+ b.innerHTML+=`<div class="msg">🤖 ${JSON.stringify(d)}</div>`;
+ }catch(err){b.innerHTML+=`<div class="msg">❌ Unable to connect to MuleSoft API.</div>`;}
+ b.scrollTop=b.scrollHeight;
 }
-
-async function handleResponse(res) {
-
-    const responseDiv =
-        document.getElementById("response");
-
-    try {
-
-        console.log("HTTP Status:", res.status);
-
-        if (res.status === 204) {
-            responseDiv.textContent =
-                JSON.stringify({
-                    success: true,
-                    message: "Operation completed successfully"
-                }, null, 2);
-            return;
-        }
-
-        const text = await res.text();
-
-        console.log("Response Body:", text);
-
-        if (!text) {
-            responseDiv.textContent =
-                "No response body returned";
-            return;
-        }
-
-        try {
-            const json = JSON.parse(text);
-            responseDiv.textContent =
-                JSON.stringify(json, null, 2);
-        } catch {
-            responseDiv.textContent = text;
-        }
-
-    } catch (e) {
-        responseDiv.textContent =
-            "Error: " + e.message;
-    }
-}
-
-async function createAccount() {
-
-    try {
-
-        const body = {
-            FullName: document.getElementById("fullName").value,
-            mobileNumber: document.getElementById("mobileNumber").value,
-            email: document.getElementById("email").value,
-            dateOfBirth: document.getElementById("dob").value,
-            address: document.getElementById("address").value
-        };
-
-        const adharNumber =
-            document.getElementById("adharNumber").value;
-
-        const bankName =
-            document.getElementById("bankName").value;
-
-        const res = await fetch(
-            `${BASE_URL}/accounts?adharNumber=${encodeURIComponent(adharNumber)}&bankName=${encodeURIComponent(bankName)}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body)
-            }
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-        show("Error: " + err.message);
-    }
-}
-
-async function getAccount() {
-
-    try {
-
-        const acc =
-            document.getElementById("getAccNo").value;
-
-        const res = await fetch(
-            `${BASE_URL}/accounts/${acc}`
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-
-        document.getElementById("response").textContent =
-            "Error: " + err.message;
-    }
-}
-
-async function getByStatus() {
-
-    try {
-
-        const status =
-            document.getElementById("status").value;
-
-        const res = await fetch(
-            `${BASE_URL}/accounts?status=${status}`
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-        show("Error: " + err.message);
-    }
-}
-
-async function updateAccount() {
-
-    try {
-
-        const acc =
-            document.getElementById("updateAccNo").value;
-
-        const body = {
-            FullName: document.getElementById("updateName").value,
-            mobileNumber: document.getElementById("updateMobile").value,
-            address: document.getElementById("updateAddress").value
-        };
-
-        const res = await fetch(
-            `${BASE_URL}/accounts/${acc}`,
-            {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(body)
-            }
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-        show("Error: " + err.message);
-    }
-}
-
-async function deleteAccount() {
-
-    try {
-
-        const acc =
-            document.getElementById("deleteAccNo").value;
-
-        const res = await fetch(
-            `${BASE_URL}/accounts/${acc}`,
-            {
-                method: "DELETE"
-            }
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-        show("Error: " + err.message);
-    }
-}
-
-async function getTransactions() {
-
-    try {
-
-        const acc =
-            document.getElementById("txnAccNo").value;
-
-        const res = await fetch(
-            `${BASE_URL}/accounts/${acc}/transactions`
-        );
-
-        await handleResponse(res);
-
-    } catch (err) {
-        show("Error: " + err.message);
-    }
-}
-
 </script>
-
-
-</body>
-</html>
+</body></html>
