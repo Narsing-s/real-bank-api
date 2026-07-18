@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real Bank AI Assistant</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{background:linear-gradient(135deg,#071b3d,#0f6ab8 45%,#eef5ff);min-height:100vh;color:#fff}
+nav{display:flex;justify-content:space-between;align-items:center;padding:24px 8%}
+.logo{font-size:30px;font-weight:800}
+.hero{display:flex;flex-wrap:wrap;gap:40px;align-items:center;justify-content:space-between;padding:5% 8%}
+.left{max-width:560px}
+.badge{display:inline-block;background:#22c55e;color:#fff;padding:8px 16px;border-radius:30px;margin-bottom:20px}
+h1{font-size:56px;line-height:1.1}
+p{margin-top:20px;color:#d8e7ff;line-height:1.7}
+.btn{display:inline-block;margin-top:28px;padding:16px 28px;border-radius:14px;background:#00b4ff;color:#fff;text-decoration:none;font-weight:700}
+.panel{width:380px;background:rgba(255,255,255,.12);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:24px}
+.services{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;padding:0 8% 70px}
+.card{background:#fff;color:#1b2b3a;border-radius:18px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.15);transition:.3s}
+.card:hover{transform:translateY(-8px)}
+.chat{position:fixed;right:25px;bottom:25px;width:360px;background:#fff;color:#222;border-radius:20px;overflow:hidden;display:none;box-shadow:0 18px 40px rgba(0,0,0,.3)}
+.chat-head{background:#0b5fff;color:#fff;padding:18px;font-weight:700}
+.chat-body{height:320px;overflow:auto;padding:15px;background:#f7f9fc}
+.msg{background:#e8f1ff;padding:10px;border-radius:10px;margin-bottom:10px}
+input{width:100%;padding:14px;border:none;border-top:1px solid #ddd}
+footer{text-align:center;padding:25px;background:#071b3d}
+</style>
+</head>
+<body>
+<nav><div class="logo">🏦 Real Bank</div><div>AI Banking Platform</div></nav>
+<section class="hero">
+<div class="left">
+<div class="badge">✓ AI Powered Banking</div>
+<h1>Modern Digital Banking Experience</h1>
+<p>Check balance, account details, mini statement and connect to your MuleSoft APIs through a modern banking interface.</p>
+<a class="btn" href="#" onclick="openChat()">Launch Assistant</a>
+</div>
+<div class="panel">
+<h2>Assistant Features</h2><br>
+<p>💳 Account Details<br>💰 Balance Check<br>📄 Mini Statement<br>🤖 AI Chat Assistant</p>
+</div>
+</section>
+<section class="services">
+<div class="card"><h3>💳 Account</h3><p>View secure account information.</p></div>
+<div class="card"><h3>💰 Balance</h3><p>Real-time balance lookup.</p></div>
+<div class="card"><h3>📄 Statement</h3><p>Recent transactions.</p></div>
+<div class="card"><h3>🤖 AI Support</h3><p>24×7 customer support.</p></div>
+</section>
+<div class="chat" id="chat">
+<div class="chat-head">🤖 Real Bank Assistant</div>
+<div class="chat-body" id="chatBody"><div class="msg">Welcome! Type <b>balance</b>, <b>accountdetails</b>, or <b>ministatement</b>.</div></div>
+<input id="userInput" placeholder="Type message..." onkeypress="sendMessage(event)">
+</div>
+<footer>© 2026 Real Bank</footer>
+<script>
+const MULE_URL="http://localhost:8081/assistance/whatsapp";
+function openChat(){document.getElementById("chat").style.display="block";}
+async function sendMessage(e){
+ if(e.key!=="Enter")return;
+ const i=document.getElementById("userInput");const m=i.value.trim();if(!m)return;
+ const b=document.getElementById("chatBody");
+ b.innerHTML+=`<div class="msg">👤 ${m}</div>`;i.value="";
+ try{
+ const r=await fetch(MULE_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mobileNumber:"9876543210",message:m})});
+ const d=await r.json();
+ b.innerHTML+=`<div class="msg">🤖 ${JSON.stringify(d)}</div>`;
+ }catch(err){b.innerHTML+=`<div class="msg">❌ Unable to connect to MuleSoft API.</div>`;}
+ b.scrollTop=b.scrollHeight;
+}
+</script>
+</body></html>
