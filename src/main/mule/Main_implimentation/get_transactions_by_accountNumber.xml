@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+	<flow name="get:\accounts\(accountNumber)\transactions:real-bank-api-config">
+        <logger level="INFO" doc:name="start Transcation cal" doc:id="6d6dae82-25c0-4288-ae4e-4e80a5570507" message="------------start Transcation call----------"/>
+		<set-variable value="#[attributes.uriParams.accountNumber as String]" doc:name="accountNumber" doc:id="0ef3d919-e528-4060-9a61-1d03911b2fc6" variableName="accountNumber" />
+		<snowflake:select doc:name="verify account data" doc:id="68f134f5-941f-4604-9dd1-1233b1e831d3" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[select * from bank_customer_data where accountnumber = :accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"accountNumber": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="eeb455f5-e2e4-4e25-9095-8406fd3475eb" variableName="email"/>
+		<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankName" doc:id="971b4b4e-3550-4aa0-9d2e-e4c034405084" variableName="bankName"/>
+		<logger level="INFO" doc:name="After verify database" doc:id="9f0a5d11-7de7-4f7b-b612-4051934a0e1b" message="=========After verify database==="/>
+		<choice doc:name="Choice" doc:id="4fe7e61e-9c8c-4ffe-afb4-255b82741c99">
+			<when expression="#[sizeOf(payload) == 0]">
+				<logger level="INFO" doc:name="Before calling tracation does not exist email implimentation flow" doc:id="7ed56e9a-4ca3-4647-972a-a01ea00c2d14" message="============Before calling tracation does not exist email implimentation flow=========" />
+				<flow-ref doc:name="calling transactions does not exist email implimentation flow" doc:id="3080e1a3-f75a-4cce-bb90-e7173ea42a34" name="get_transactions_doesnot_exit_email_implimentationFlow"/>
+				<logger level="INFO" doc:name="Response fromm transaction does not exist email implimentation flow" doc:id="814a82ef-c5ef-4043-9224-8bd98add9bba" message="==========Response fromm transaction does not exist email implimentation flow=========" />
+				<ee:transform doc:name="account does not exist in database" doc:id="92dbeee6-df5a-4646-b801-636af6eb73a4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bank_account_detailes": {
+		"account_status": {
+			"status": "FAILED",
+			"statusCode": "404",
+			"accountNumber": vars.accountNumber default "Unknow",
+			"message": "An account does not exists with the provided customer details. Please try with new details. If you are a new customer, please validate your information."	
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="The customer account deatils does not  existed in DB" doc:id="1124294e-8bb3-4d65-8f06-05860bd04c01" message="----------------------------The customer account deatils does not  existed in DB--------------------------" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Before calling tracation database implimentation flow" doc:id="a68d1a50-1c9f-4d2e-9176-c15579bd58a9" message="============Before calling tracation database implimentation flow=========" />
+				<flow-ref doc:name="calling transaction database to retrive transactions for the user account" doc:id="276fea52-467a-4baa-8276-17772eb2fb5f" name="get_transaction_database_data_flow"/>
+				<logger level="INFO" doc:name="Response recieved from the tracation database implimentation flow" doc:id="5fb2145b-723a-42dd-8aed-57d663694f0a" message="==========Response recieved from the tracation database implimentation flow=========" />
+				<ee:transform doc:name="after database" doc:id="6f9c9092-3280-483a-bb4c-75a946652bf5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<ee:transform doc:name="payloadType" doc:id="da59b5dc-0ffe-4cae-b6d0-b35e99ce78f1">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    payloadType: typeOf(payload),
+    payload: payload
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;    status: "SUCCESS",&#10;    statusCode: 200,&#10;    transactions: vars.db map (row) -&gt; {&#10;        accountNumber: row.ACCOUNTNUMBER,&#10;        transactionType: row.TRANSACTIONTYPE,&#10;        amount: row.AMOUNT,&#10;        balance: row.BALANCE,&#10;        timestamp: row.TIMESTAMP&#10;    }&#10;}]' doc:name="output" doc:id="03620be3-2352-4756-9ecb-76e162772810" variableName="output"/>
+				<logger level="INFO" doc:name="Before calling tracation email implimentation flow" doc:id="673c3598-979e-4c70-a1c4-31fb754a148f" message="============Before calling tracation email implimentation flow=========" />
+				<flow-ref doc:name="get transaction email implimentation flow" doc:id="5310f20f-4c8d-4d1a-aa32-1fda82ad4cef" name="get_transaction_email_implimentation_flow"/>
+				<logger level="INFO" doc:name="response recieved from tracation email implimentation flow" doc:id="df23ff25-c24e-490b-8c1d-fcfa3dc79b20" message="=============response recieved from tracation email implimentation flow========"/>
+				<ee:transform doc:name="final output" doc:id="7666cb68-2537-4595-9449-65263ed7d830" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars."output"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="End Transaction Flow" doc:id="be14bfb0-2709-4970-9152-b6b5ec09fc23" message="-----------------------End Transaction Flow-----------------------#[payload]"/>
+    </flow>
+	
+	
+	
+	
+	
+	</mule>

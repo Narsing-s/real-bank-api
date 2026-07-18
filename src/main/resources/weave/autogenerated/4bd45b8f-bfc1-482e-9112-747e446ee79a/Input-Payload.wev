@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_4bd45b8f_bfc1_482e_9112_747e446ee79a_Input_Payload = {|
+  ACCOUNTNUMBER?: String, 
+  IFSC_CODE: String, 
+  BRANCH_NAME: String
+|}
+

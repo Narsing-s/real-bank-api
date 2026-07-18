@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+	<flow name="post:\accounts\(accountNumber)\deposit:application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="Deposite flow started" doc:id="1f412531-0878-4436-97d6-bf1b37810e5f" message="-----------------------------Deposit Flow triggred----------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber]" doc:name="accountNumber for the respective user" doc:id="92424c76-d553-489e-adf2-53fecc9be796" variableName="accountNumber" />
+		<set-variable value="#[(payload.amount default 0) as Number]" doc:name="amount requested by user" doc:id="7b51cc4d-2a34-4cbe-9bee-ee7335023626" variableName="amount"/>
+		<snowflake:select doc:name="Verify account deatiles are exist in database or not" doc:id="0ce592f6-7119-484b-ae1f-dbbb47b3ffbc" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data where accountNumber = :accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+  "accountNumber": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload which is send by user" doc:id="3a25bf04-fcb9-42d3-86c5-3f84f6322f20" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="50d8b4a5-6b4c-4d7a-86b9-223e2d676639" >
+			<when expression="#[sizeOf(payload) == 1]" >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="a7fa8629-355c-47ce-9afb-24499696171b" variableName="email" />
+				<logger level="INFO" doc:name="record found with the requested user data" doc:id="74090287-5479-4bd2-a7c4-b4d8af445ee3" message="========record found with the requested user data before update database============" />
+				<snowflake:update doc:name="Update the deposited amount in the database" doc:id="91966ca1-1131-4b0b-be34-aaef6c998de0" config-ref="Snowflake_Config" >
+					<snowflake:sql ><![CDATA[UPDATE MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA
+SET
+    BALANCE = COALESCE(BALANCE, 0) + :amount,
+
+    TRANSACTIONS = ARRAY_APPEND(
+        COALESCE(TRANSACTIONS, ARRAY_CONSTRUCT()),
+        OBJECT_CONSTRUCT(
+            'accountNumber', ACCOUNTNUMBER,
+            'transactionType', 'DEPOSIT',
+            'amount', :amount,
+            'balanceAfterTransaction', COALESCE(BALANCE, 0) + :amount,
+            'timestamp', CURRENT_TIMESTAMP()
+        )
+    )
+
+WHERE ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{
+            accountNumber: vars.accountNumber,
+            amount: vars.amount
+        }]]]></snowflake:input-parameters>
+				</snowflake:update>
+				<logger level="INFO" doc:name="After update Databse the deposted amount updated successfully" doc:id="7a39fe6f-a38f-4f12-a316-ff47024bc066" message="=================Deposted amout updated successfully==========="/>
+				<choice doc:name="" doc:id="4025b55b-5543-4887-a339-c05105588e70" >
+					<when expression="#[payload.affectedRows &gt;= 1]" >
+						<flow-ref doc:name="calling deposit flow" doc:id="24b44278-1d67-4a2e-bc0a-b06e4daeaf03" name="Post_deposite_flow" />
+						<logger level="INFO" doc:name="Logger" doc:id="73f3e665-6f96-48a2-a58d-5490769ccfd2" message="----------------------End Deposite Flow------------------#[payload]-"/>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Update won't happend" doc:id="fd1d923d-6035-42a5-8303-a7417f2fad76" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: 
+    "Account is identified but Amount deposited failed for Account Number - " 
+    ++ vars.inputpayload.ACCOUNTNUMBER[0] as String
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="record not found" doc:id="bf65d7ea-9e51-46a3-96ff-ec75ee5b08ea" message="---------------------------------Record not Found for the given input------------------------------" />
+				<ee:transform doc:name="output" doc:id="472fc0bd-b2d4-4ea1-a9d9-a0d4dc42f19b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var accNo = vars.inputpayload.ACCOUNTNUMBER[0] as String
+var bank  = vars.inputpayload.BANKNAME[0] as String
+---
+{
+  errorCode: "ACCOUNT_NOT_FOUND",
+  message: "Your account number " ++ accNo ++ 
+           " does not exist in bank " ++ bank ++ 
+           ". Please try with a different account number."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+    </flow>
+	
+	
+	
+	
+	
+	</mule>

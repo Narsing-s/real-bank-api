@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking
+http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+	<flow name="get:\accounts:real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="1fdfe449-c7e1-41a3-b9ae-b1485830a4f3" message="-------------------------------Start Flow----------------------------------" />
+		<set-variable value="#[attributes.queryParams.status]" doc:name="status" doc:id="4497b4a2-9952-4910-bc1e-9ae20b8c82af" variableName="status" />
+		<logger level="INFO" doc:name="Before DB" doc:id="d91ee298-c8a8-4228-9f2a-072907ff4cb9" message="-----------------Before DB--------------" />
+		<snowflake:select doc:name="verify account" doc:id="64829bc4-40ae-450c-8443-60fec128846c" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[SELECT * 
+FROM bank_customer_data 
+WHERE STATUS = :status]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{ status: vars.status }]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<logger level="INFO" doc:name="After DB" doc:id="c615f646-6f43-498e-918f-15a71d442343" message="--------------After DB--------------" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="6e63245f-f1ee-4b20-b17b-fe3ca8ba6375" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="7dab1d9a-29a5-43bc-b0d5-a7e1d3f38c65">
+			<when expression='#[vars.status == "INACTIVE"]'>
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="e9f33484-0bb2-4fd5-b29d-36b50dac57d8" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="9b085e84-ea9a-4f46-8403-a5ebd781e493" variableName="bankname" />
+				<choice doc:name="Choice" doc:id="dcac9b7d-98d2-4ad3-9cf0-a5dc6be5d297">
+					<when expression="#[vars.inputpayload.ACCOUNTNUMBER[0] == null]">
+						<logger level="INFO" doc:name="Before inactive accounts does not exist flow" doc:id="67ba5103-8d19-4192-84cc-30d186657313" message="============Before inactive accounts does not exist flow========"/>
+						<flow-ref doc:name="calling inactive accounts does not exist in database" doc:id="6b491d6d-3652-495e-b2de-0b5b5694b3c3" name="get_inactive_active_accounts_doesnot_exit_flow"/>
+						<logger level="INFO" doc:name="After inactive accounts does not exist flow" doc:id="a702ce46-7462-4b45-b106-a7277373b3b5" message="==========After inactive accounts does not exist flow======="/>
+						<ee:transform doc:name="account does not exist in database" doc:id="71037d9a-86d0-461f-ab7c-ef8e28bda277" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bank_account_detailes": {
+		"account_status": {
+			"status": "FAILED",
+			"statusCode": "404",
+			"account_status":vars.status,
+			"message": "An account does not exists with the provided customer details. Please try with new details. If you are a new customer, please validate your information."	
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="The customer account deatils does not  existed in DB" doc:id="007eed6d-1172-4c83-8c97-8fe66a5e0e9c" message="----------------------------The customer account deatils does not  existed in DB--------------------------"/>
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Before inactive email implimentation flow" doc:id="3d71d6fb-901c-49b2-8b0a-79c245352e79" message="=========Before inactive email implimentation flow==========="/>
+						<flow-ref doc:name="get inactive accounts email implimentation flow" doc:id="03fe768f-3d53-4a02-b0d2-70e5698fbf8b" name="get_inactive_active_account_email_implimentation_flow"/>
+						<logger level="INFO" doc:name="response recieved from the inactive email implimentation flow" doc:id="9f891cfc-fd1f-4292-b42f-e5eeaa5b9e90" message="=========response recieved from the inactive email implimentation flow=========="/>
+						<ee:transform doc:name="response" doc:id="22585a46-4453-42e6-9143-239a469e0ea0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  bankDetails: {
+    account_data: {
+	  "status": "Success",
+	  "statusCode": 200,
+      "message": "The account details email has been sent successfully to the user.",
+      "data": vars.inputpayload map (item) -> item - "TRANSACTIONS"  }
+  }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					</otherwise>
+				</choice>
+				<logger level="INFO" doc:name="End Flow" doc:id="a50db50a-5865-4abe-8d99-2409a8725f61" message="----------------------------End Flow------------------------#[payload]" />
+			</when>
+			<when expression='#[vars.status == "ACTIVE"]'>
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="08f31f14-8814-4d59-9550-d6fa6d0d9802" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="05661ea4-68f3-4895-868a-2a3e28cee6fa" variableName="bankname" />
+				<choice doc:name="Choice" doc:id="87ce6b90-f30d-4d0e-9619-aa0571239185">
+					<when expression="#[vars.inputpayload.ACCOUNTNUMBER[0] == null]">
+						<logger level="INFO" doc:name="Before active accounts does not exist flow" doc:id="925da735-56da-4d52-ad8e-6964c3f69e64" message="==========Before active accounts does not exist flow========"/>
+						<flow-ref doc:name="calling active accounts does not exist in database" doc:id="b7bd04db-ab1b-4fcf-ae4e-d99ba1ccd4f5" name="get_inactive_active_accounts_doesnot_exit_flow" />
+						<logger level="INFO" doc:name="After active accounts does not exist flow" doc:id="9f486e6c-134c-4714-8237-5a2e519118ff" message="===========After active accounts does not exist flow============"/>
+						<ee:transform doc:name="account does not exist in database" doc:id="dd1785b9-937c-4f66-8217-fbd6a7c56514" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bank_account_detailes": {
+		"account_status": {
+			"status": "FAILED",
+			"statusCode": "409",
+			"account_status": vars.status,
+			"message": "An account does not exists with the provided customer details. Please try with new details. If you are a new customer, please validate your information."	
+		}
+	}
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="The customer account deatils does not  existed in DB" doc:id="3b92465c-61d9-4449-a8b3-03efcc928271" message="----------------------------The customer account deatils does not  existed in DB--------------------------" />
+					</when>
+					<otherwise >
+						<logger level="INFO" doc:name="Before active email implimentation flow" doc:id="0280f2af-47f0-4c1a-b1ac-45cc7c17c21b" message="=========Before active email implimentation flow===========" />
+						<flow-ref doc:name="get active accounts email implimentation flow" doc:id="10e45d31-f958-469b-aad6-8ae1a15cf2fe" name="get_inactive_active_account_email_implimentation_flow" />
+						<logger level="INFO" doc:name="response recieved from the active email implimentation flow" doc:id="fbcc847e-5d09-4068-8250-f15ce3f66525" message="=========response recieved from the active email implimentation flow==========" />
+						<ee:transform doc:name="response" doc:id="2adb1358-4f22-4507-ab02-d8fe96a95f87">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  bankDetails: {
+    account_data: {
+       "status": "Success",
+       "statusCode": 200,
+       "message": "The account details email has been sent successfully to the user.",
+       "data": vars.inputpayload map (item) -> item - "TRANSACTIONS"  }
+  }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+					</otherwise>
+				</choice>
+				<logger level="INFO" doc:name="End Flow" doc:id="4f16e58a-cac8-4f39-a7a8-af9c91fab822" message="----------------------------End Flow------------------------#[payload]" />
+			</when>
+		</choice>
+    </flow>
+	</mule>

@@ -1,0 +1,9 @@
+%dw 2.0
+
+type auto_917eb90d_e921_4920_a5f5_0ecb4d0679cb_Input_Payload = {|
+  affectedRows?: Number, 
+  generatedKeys?: { _?: Number }
+|} {"typeId": "com.mulesoft.connector.snowflake.api.params.SnowflakeStatementResult",
+"class": "com.mulesoft.connector.snowflake.api.params.SnowflakeStatementResult",
+"typeAlias": "SnowflakeStatementResult"}
+

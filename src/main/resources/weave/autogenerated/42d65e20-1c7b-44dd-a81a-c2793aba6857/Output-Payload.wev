@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_42d65e20_1c7b_44dd_a81a_c2793aba6857_Output_Payload = {
+  amount: Number, 
+  balance: Number, 
+  accountNumber: String, 
+  "type": String, 
+  timestamp: String, 
+  _?: Any
+}
+

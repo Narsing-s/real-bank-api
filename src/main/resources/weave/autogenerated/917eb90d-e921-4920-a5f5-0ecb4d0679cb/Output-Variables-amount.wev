@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_917eb90d_e921_4920_a5f5_0ecb4d0679cb_Output_Variables_amount = Number
+

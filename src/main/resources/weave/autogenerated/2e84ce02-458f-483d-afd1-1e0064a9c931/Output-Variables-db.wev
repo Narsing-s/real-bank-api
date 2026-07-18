@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_2e84ce02_458f_483d_afd1_1e0064a9c931_Output_Variables_db = Array<{|  ACCOUNTNUMBER?: String,   TRANSACTIONTYPE?: String,   AMOUNT?: Number,   BALANCE?: Number,   TIMESTAMP?: String|}>
+

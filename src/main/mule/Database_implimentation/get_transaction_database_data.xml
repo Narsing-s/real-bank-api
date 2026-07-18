@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+	<flow name="get_transaction_database_data_flow" doc:id="2e84ce02-458f-483d-afd1-1e0064a9c931" >
+		<logger level="INFO" doc:name="Request recieved to database implimentation flow" doc:id="0769c44b-e3fb-4806-87f9-eb26fbd4f34a" message="------------Request recieved to database implimentation flow-------Before DB--------------" />
+		<snowflake:select doc:name="retrive transaction data" doc:id="f639977a-1604-4b3d-84c5-2d44a7a08909" config-ref="Snowflake_Config" target="db" >
+			<snowflake:sql ><![CDATA[SELECT
+    c.ACCOUNTNUMBER AS ACCOUNTNUMBER,
+    t.value['transactionType']::STRING AS TRANSACTIONTYPE,
+    t.value['amount']::NUMBER AS AMOUNT,
+    t.value['balanceAfterTransaction']::NUMBER AS BALANCE,
+    t.value['timestamp']::STRING AS TIMESTAMP
+FROM MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA c,
+LATERAL FLATTEN(INPUT => c.TRANSACTIONS) t
+WHERE c.ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+    accountNumber: vars.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<logger level="INFO" doc:name="After Database implementation flow" doc:id="d6e72ae7-1e80-4c3e-83e0-76dc9edfc7fa" message="----------------------After Database implementation------------------#[payload]" />
+	</flow>
+</mule>

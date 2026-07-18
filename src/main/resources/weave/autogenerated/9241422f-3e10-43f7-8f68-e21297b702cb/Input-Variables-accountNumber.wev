@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_9241422f_3e10_43f7_8f68_e21297b702cb_Input_Variables_accountNumber = String
+

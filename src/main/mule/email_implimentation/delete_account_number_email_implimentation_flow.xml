@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="delete_account_number_flow" doc:id="9115f645-8a2b-4620-9c3f-1a5bbaaf762d" >
+		<logger level="INFO" doc:name="request reieved to email implementation flow" doc:id="eea057ef-9ade-4efc-b80f-f1f7bf84df74" message="==========request reieved to email implementation flow==========" />
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var data = if (payload is Array) payload[0] else payload&#10;&#10;fun getVal(v) =&#10;    if (v is Array) v[0]&#10;    else v default &quot;&quot;&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&#10;&lt;html&gt;&#10;&#10;&lt;head&gt;&#10;&#10;&lt;meta charset='UTF-8'&gt;&#10;&#10;&lt;style&gt;&#10;&#10;body{&#10;    margin:0;&#10;    padding:40px 0;&#10;    background:#f4f7fb;&#10;    font-family:Arial,Helvetica,sans-serif;&#10;}&#10;&#10;.container{&#10;    width:680px;&#10;    margin:auto;&#10;    background:#ffffff;&#10;    border-radius:15px;&#10;    overflow:hidden;&#10;    box-shadow:0 10px 35px rgba(0,0,0,.15);&#10;}&#10;&#10;.header{&#10;    background:linear-gradient(90deg,#8B0000,#d32f2f);&#10;    color:white;&#10;    text-align:center;&#10;    padding:35px;&#10;}&#10;&#10;.logo{&#10;    font-size:32px;&#10;    font-weight:bold;&#10;}&#10;&#10;.tagline{&#10;    margin-top:8px;&#10;    font-size:14px;&#10;    opacity:.9;&#10;}&#10;&#10;.banner{&#10;    text-align:center;&#10;    padding:35px;&#10;}&#10;&#10;.icon{&#10;    width:90px;&#10;    height:90px;&#10;    line-height:90px;&#10;    margin:auto;&#10;    border-radius:50%;&#10;    background:#dc2626;&#10;    color:white;&#10;    font-size:42px;&#10;}&#10;&#10;.banner h2{&#10;    color:#b91c1c;&#10;    margin-top:20px;&#10;}&#10;&#10;.banner p{&#10;    color:#555;&#10;}&#10;&#10;.card{&#10;    margin:30px;&#10;    border:1px solid #e5e7eb;&#10;    border-radius:10px;&#10;    overflow:hidden;&#10;}&#10;&#10;.card-title{&#10;    background:#f8fafc;&#10;    padding:18px;&#10;    font-size:20px;&#10;    font-weight:bold;&#10;    color:#8B0000;&#10;}&#10;&#10;table{&#10;    width:100%;&#10;    border-collapse:collapse;&#10;}&#10;&#10;td{&#10;    padding:16px;&#10;    border-bottom:1px solid #eeeeee;&#10;}&#10;&#10;.label{&#10;    font-weight:bold;&#10;    color:#555;&#10;}&#10;&#10;.value{&#10;    text-align:right;&#10;    color:#111827;&#10;}&#10;&#10;.status{&#10;    color:#dc2626;&#10;    font-weight:bold;&#10;    font-size:18px;&#10;}&#10;&#10;.notice{&#10;    margin:30px;&#10;    background:#fff4f4;&#10;    border-left:6px solid #dc2626;&#10;    padding:20px;&#10;    border-radius:6px;&#10;    color:#555;&#10;}&#10;&#10;.footer{&#10;    background:#f8fafc;&#10;    text-align:center;&#10;    padding:30px;&#10;    font-size:13px;&#10;    color:#666;&#10;}&#10;&#10;.footer b{&#10;    color:#003366;&#10;}&#10;&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&#10;&lt;div class='logo'&gt;&#10;🏦 &quot; ++ (payload.BANKNAME[0] default &quot;N/A&quot;) ++ &quot;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='tagline'&gt;&#10;Secure • Trusted • Digital Banking&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='banner'&gt;&#10;&#10;&lt;div class='icon'&gt;&#10;🔒&#10;&lt;/div&gt;&#10;&#10;&lt;h2&gt;Account Successfully Deactivated&lt;/h2&gt;&#10;&#10;&lt;p&gt;&#10;&#10;Dear &lt;b&gt;&quot;&#10;++&#10;upper(getVal(vars.FULLNAME))&#10;++&#10;&quot;&lt;/b&gt;,&#10;&#10;&lt;br/&gt;&lt;br/&gt;&#10;&#10;Your account has been successfully deactivated as requested.&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='card'&gt;&#10;&#10;&lt;div class='card-title'&gt;&#10;&#10;Account Information&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;table&gt;&#10;&#10;&lt;tr&gt;&#10;&#10;&lt;td class='label'&gt;Customer Name&lt;/td&gt;&#10;&#10;&lt;td class='value'&gt;&quot;&#10;++&#10;upper(getVal(vars.FULLNAME))&#10;++&#10;&quot;&lt;/td&gt;&#10;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&#10;&lt;td class='label'&gt;Bank Name&lt;/td&gt;&#10;&#10;&lt;td class='value'&gt;&quot;&#10;++&#10;getVal(data.BANKNAME)&#10;++&#10;&quot;&lt;/td&gt;&#10;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&#10;&lt;td class='label'&gt;Account Number&lt;/td&gt;&#10;&#10;&lt;td class='value'&gt;&quot;&#10;++&#10;getVal(data.ACCOUNTNUMBER)&#10;++&#10;&quot;&lt;/td&gt;&#10;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&#10;&lt;td class='label'&gt;Account Status&lt;/td&gt;&#10;&#10;&lt;td class='value status'&gt;&#10;DEACTIVATED&#10;&lt;/td&gt;&#10;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&#10;&lt;td class='label'&gt;Effective Date&lt;/td&gt;&#10;&#10;&lt;td class='value'&gt;&#10;&quot;&#10;++&#10;(now() as String {format:&quot;dd MMM yyyy hh:mm:ss a&quot;})&#10;++&#10;&quot;&#10;&lt;/td&gt;&#10;&#10;&lt;/tr&gt;&#10;&#10;&lt;/table&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='notice'&gt;&#10;&#10;&lt;b&gt;⚠ Security Notice&lt;/b&gt;&#10;&#10;&lt;br/&gt;&lt;br/&gt;&#10;&#10;If you did not request this account deactivation, please contact our&#10;24×7 Customer Support immediately to secure your account.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;&#10;&lt;b&gt;Real Bank&lt;/b&gt;&#10;&#10;&lt;br/&gt;&lt;br/&gt;&#10;&#10;📞 Customer Care : +91 9494207062&#10;&#10;&lt;br/&gt;&#10;&#10;✉ support@realbank.com&#10;&#10;&lt;br/&gt;&#10;&#10;🌐 www.realbank.com&#10;&#10;&lt;br/&gt;&lt;br/&gt;&#10;&#10;© 2026 Real Bank. All Rights Reserved.&#10;&#10;&lt;br/&gt;&lt;br/&gt;&#10;&#10;This is a system-generated email. Please do not reply.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&#10;&lt;/html&gt;&quot;]" doc:name="emailBody" doc:id="3d495178-d0c9-45d5-9bca-5b64d6cc9f8d" variableName="emailBody" />
+		<parse-template doc:name="creating html templete with user data for user email conformation " doc:id="f216e0a6-88f7-4e52-846f-fc0cef630cee" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+		</parse-template>
+		<email:send doc:name="email send to the respective users with the respective bank data" doc:id="c9dd2c73-fb3c-49b4-a875-f16fa5ca9218" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account deactived successfully in -" ++ vars.bankname]' >
+			<email:to-addresses >
+				<email:to-address value="#[vars.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" encoding="UTF-8" />
+		</email:send>
+		<logger level="INFO" doc:name="after email send to the repective user with thier account detailes" doc:id="833f7daf-251e-481b-99ea-2b144215deed" message="=========after email send to the repective user with thier account detailes===========" />
+	</flow>
+</mule>

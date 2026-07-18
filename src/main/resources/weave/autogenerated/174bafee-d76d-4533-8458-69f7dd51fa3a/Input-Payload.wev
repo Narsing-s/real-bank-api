@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_174bafee_d76d_4533_8458_69f7dd51fa3a_Input_Payload = Array<{|  CUSTOMER_ID?: Number,   FULLNAME?: String,   DATEOFBIRTH?: Date,   MOBILENUMBER?: String,   BANKNAME?: String,   EMAIL?: String,   ADDRESS?: String,   ADHARNUMBER?: String,   ACCOUNTNUMBER?: String,   TRANSACTIONS?: String,   STATUS?: String,   CREATED_AT?: Date,   BALANCE?: String,   EMAIL_SENT?: Boolean,   IFSC_CODE?: String,   BRANCH_NAME?: String|}>
+

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+	<flow name="patch:\accounts\(accountNumber):application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow update account data flow" doc:id="e0c63f14-3ff4-4c15-b290-ad47a9c74015" message="---------------------------Start Flow update account data flow---------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber as String]" doc:name="accountNumber" doc:id="f01a8d78-cf64-4906-bec9-1b226db4aa0d" variableName="accountNumber" />
+		<set-variable value="#[payload]" doc:name="inputpayload" doc:id="c00a4f92-ce2d-4440-b560-de8b2f3cc6fc" variableName="inputpayload" />
+		<logger level="INFO" doc:name="Before DB" doc:id="1a9c8633-267c-402f-b990-f5eaf9cd6d59" message="--------------Before DB-----------" />
+		<snowflake:select doc:name="Verify account in DB" doc:id="e6a69de7-0a0a-4c5d-954b-477fb0f762c3" config-ref="Snowflake_Config" >
+			<snowflake:sql ><![CDATA[select * from bank_customer_data where accountnumber = :accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"accountNumber": vars.accountNumber
+	}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.FULLNAME]" doc:name="FULLNAME" doc:id="4f36fdb6-2986-45a0-ae65-0514715afb27" variableName="FULLNAME" />
+		<logger level="INFO" doc:name="After DB" doc:id="8f9b4963-2748-4527-88a5-788f59cbd046" message="-------------------After DB-----------#[payload]" />
+		<choice doc:name="Choice" doc:id="7eeb44c4-2f31-4dd0-b2f2-b7c7138eef23" >
+			<when expression="#[sizeOf(payload) == 1 and payload.FULLNAME[0] == vars.inputpayload.FullName and payload.MOBILENUMBER[0] == vars.inputpayload.mobileNumber and payload.ADDRESS[0] == vars.inputpayload.address]" >
+				<flow-ref doc:name="calling patch account upto date email implimentation flow" doc:id="2aec766b-79d0-4b21-bf4d-a11f62ad6a53" name="patch_account_data_upto_date_email_implimentation_flow"/>
+				<ee:transform doc:name="Account Existed" doc:id="8b55ceed-7c88-4a2d-88b1-e05a73a1007a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Status": "Failed",
+	"StatusCode": 200,
+    message: "Requested data is already updated with the same details",
+    accountNumber: vars.accountNumber,
+    account_data: {
+    	"fullname": payload.FULLNAME[0],
+    	"mobilenumber": payload.MOBILENUMBER[0],
+    	"address": payload.ADDRESS[0],
+    	"accountStatus": payload.STATUS[0],
+    	"accountCreatedOn": payload.CREATED_AT[0]
+    }
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="d1f79262-71ad-4e66-a1a9-f6f1bb7eb5db" message="--------------------End Flow--------------#[payload]" />
+			</when>
+			<otherwise >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="d6208efc-b10e-45bb-85dc-b416ea738281" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="BANKNAME" doc:id="ab4fb317-f1d5-40f6-8e37-1dd44ead3b9c" variableName="BANKNAME" />
+				<flow-ref doc:name="calling update database implimentation flow" doc:id="e5c7911b-5e48-4bac-b2a8-a4011af9057d" name="patch_user_requested_to_update_few_keyfileds_flow"/>
+				<ee:transform doc:name="After update databse then the output transform from array of object to json" doc:id="5f8dab4f-d183-426e-af30-d222ff22b63c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="reponse recieved from the update database flow" doc:id="57920864-3854-497b-b1d5-d43f9904d508" message="============reponse recieved from the update database flow=========="/>
+				<flow-ref doc:name="calling patch email implemetion flow" doc:id="96b6006c-bec7-41f0-bf28-e5654218433a" name="patch_update_few_keyfileds_requested_by_user_email_flow"/>
+				<logger level="INFO" doc:name="Response recieved from the patch email implimentation flow" doc:id="bad11e7d-c555-4285-8f32-53235d4c3de6" message="===========Response recieved from the patch email implimentation flow======="/>
+				<ee:transform doc:name="response" doc:id="2b922ac0-8eb7-4ad5-8923-2ef5f5e38dd0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bank_account_detailes: {
+		"account_data": {
+			"status": "Success",
+			"statusCode": 200,
+			"message": "The account has been updated successfully, and an email has been sent successfully.",
+			"accountNumber": vars.accountNumber,
+			"user_input_data": {
+				"input_data": vars.inputpayload
+			}
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="29c6adba-5c18-4615-ba28-ed7e13eb6022" message="-------------------End Flow----------------------#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+	
+	</mule>

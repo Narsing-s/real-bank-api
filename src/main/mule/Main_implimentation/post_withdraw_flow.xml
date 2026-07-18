@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+
+	<flow name="post:\accounts\(accountNumber)\withdraw:application\json:real-bank-api-config">
+		<logger level="INFO" doc:name="Withdraw flow started" doc:id="825409c5-41bd-4194-b3b9-2c7988220c10" message="-----------------------------Withdraw Flow triggred----------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber]" doc:name="accountNumber for the respective user" doc:id="3a7e5da3-f7f1-47e6-9b0c-2949b1667cbe" variableName="accountNumber" />
+		<set-variable value="#[(payload.amount default 0) as Number]" doc:name="amount requested by user" doc:id="e9bb863b-08b4-4dce-93c2-8eabda09dd9d" variableName="amount"/>
+		<snowflake:select doc:name="Verify account exist or not" doc:id="3353d34d-9b0e-41e8-8901-cc6cd7f72172" config-ref="Snowflake_Config">
+				<snowflake:sql><![CDATA[select * from bank_customer_data where accountNumber = :accountNumber]]></snowflake:sql>
+				<snowflake:input-parameters><![CDATA[#[{
+  "accountNumber": vars.accountNumber
+  }]]]></snowflake:input-parameters>
+			</snowflake:select>
+		<set-variable value="#[payload.BALANCE[0]]" doc:name="total balance available in the bank" doc:id="7915f724-8b5c-4526-9aae-f7f4241c9eca" variableName="balance"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload which is reuqted data send by user" doc:id="43928d94-a157-467f-aab3-aba07de3cc90" variableName="inputpayload" />
+		<choice doc:name="Choice" doc:id="2f108b84-d60b-4256-bfee-2b0c7a1efa8d" >
+			<when expression="#[sizeOf(payload) &gt; 0]" >
+				<logger level="INFO" doc:name="record found with the requested user data before update database" doc:id="3e7879ff-5192-4a7e-9fb3-b04e4962e964" message="---------------------------------record found with the requested user data before update database-------------------------------" />
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email of the user" doc:id="0cf389f4-8faf-4469-a8bb-7d25a81e9e63" variableName="email" />
+				<logger level="INFO" doc:name="Before Update" doc:id="c1bb847b-07c3-4ec1-a66a-22d4b6579fb2" message="------------------Before Update withdraw Flow-------------"/>
+				<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;var currentBalance = (vars.balance default 0) as Number&#10;var withdrawAmount = (vars.amount default 0) as Number&#10;var remainingBalance = currentBalance - withdrawAmount&#10;&#10;---&#10;{&#10;    balance: remainingBalance,&#10;    amount: withdrawAmount,&#10;    accountNumber: vars.accountNumber&#10;}]" doc:name="leftBalance mapping " doc:id="fea6e6d8-ccb0-4b79-b743-f8f7f36087d5" variableName="leftBalance" />
+				<set-variable value="#[vars.leftBalance.balance]" doc:name="leftbalances" doc:id="fe6066ca-a58b-444b-9051-b75ef296889f" variableName="leftbalances"/>
+				<choice doc:name="Choice" doc:id="a2b0fea7-8569-4b6f-b4cc-07fddfccea31">
+					<when expression="#[vars.leftBalance.balance  &gt;= 0]">
+						<logger level="INFO" doc:name="Inside balance choice router" doc:id="3320bbe7-7546-495f-ae14-b0fd184b2542" message="=======Sufficient Balance=======Inside balance choice router==========="/>
+						<snowflake:update doc:name="Update account data after money withdraw " doc:id="a5699946-4753-4985-8ee3-e26d4908f8df" config-ref="Snowflake_Config">
+					<snowflake:sql><![CDATA[UPDATE MYDATABASE.PUBLIC.BANK_CUSTOMER_DATA
+SET
+    BALANCE = :balance,
+    TRANSACTIONS = ARRAY_APPEND(
+        COALESCE(TRANSACTIONS, ARRAY_CONSTRUCT()),
+        OBJECT_CONSTRUCT(
+            'accountNumber', ACCOUNTNUMBER,
+            'transactionType', 'WITHDRAW',
+            'amount', :amount,
+            'balanceAfterTransaction', :balance,
+            'timestamp', CURRENT_TIMESTAMP()
+        )
+    )
+WHERE ACCOUNTNUMBER = :accountNumber;]]></snowflake:sql>
+					<snowflake:input-parameters><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	balance: vars.leftBalance.balance as String,
+	amount: vars.amount,
+	accountNumber: vars.accountNumber,
+}]]]></snowflake:input-parameters>
+				</snowflake:update>
+						<logger level="INFO" doc:name="After Update" doc:id="76dd1ec6-6ad3-404a-a6ae-1f4c8f22da65" message="-------------------------After Update withdraw Flow-----------------" />
+						<choice doc:name="checking the withdraw amount updated or not" doc:id="92c20a42-0791-4f8e-a649-b248234d4e99">
+					<when expression="#[((payload.updateCount default payload.affectedRows default 0) as Number) &gt; 0]">
+								<flow-ref doc:name="call withdraw email flow" doc:id="d9e42027-75a0-4169-bba2-6b83005035f9" name="Post_withdraw_flow" targetValue="#[vars.email]" />
+								<logger level="INFO" doc:name="Logger" doc:id="e2882710-f326-4374-82c6-3146d3d8ddd8" message="--------------------End Withdraw flow------------#[payload]" />
+					</when>
+							<otherwise>
+						<ee:transform doc:name="Update won't happend" doc:id="e8f08137-4e6e-458f-a203-e4259ade79f7">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	amount: vars.amount,
+	timestamp: payload.CREATED_AT as String default "",
+	status: "Account is identified but Amount withdraw failed for Account Number - " ++ vars.inputpayload.ACCOUNTNUMBER[0] as String
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Insufficent balance" doc:id="5b41d4d9-5ba8-482b-8f37-b232589976aa" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    bank_account_details: {
+        account_status: {
+            status: "FAILED",
+            statusCode: 404,
+            amount: vars.amount,
+            availableBalance: vars.balance,
+            message: "Insufficient balance. The requested withdrawal amount exceeds the available account balance."
+        }
+    }
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="End insufficent balance flow" doc:id="7fb58319-9099-4196-be83-722eb1030fb7" message="==========End insufficent balance flow=========#[payload]"/>
+					</otherwise>
+				</choice>
+			
+</when>
+			<otherwise >
+				<logger level="INFO" doc:name="record not found" doc:id="d47e4ea6-6484-4830-9d51-edd7c9e0ae79" message="---------------------------------Record not Found for the given input------------------------------" />
+				<ee:transform doc:name="output" doc:id="c76f8b72-b789-4bc5-8d37-8eda983d7112" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"bank_account_detailes": {
+		"account_status": {
+			"status": "FAILED",
+			"statusCode": "404",
+			"accountNumber": vars.accountNumber default "Unknow",
+			"message": "An account does not exists with the provided customer details. Please try with new details. If you are a new customer, please validate your information."	
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Record Not Found End Flow" doc:id="76dfa10b-ad75-441f-be0d-249666ecc957" message="==========Record Not Found End Flow===========#[payload]"/>
+			</otherwise>
+		</choice>
+    </flow>
+	
+	
+	
+	
+	
+	</mule>
