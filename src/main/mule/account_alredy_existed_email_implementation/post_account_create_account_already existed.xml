@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="post_account_create_account_already_existedFlow" doc:id="4bd45b8f-bfc1-482e-9112-747e446ee79a" >
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;title&gt;Account Already Exists&lt;/title&gt;&#10;&#10;&lt;style&gt;&#10;*{&#10;margin:0;&#10;padding:0;&#10;box-sizing:border-box;&#10;font-family:'Segoe UI',Arial,sans-serif;&#10;}&#10;&#10;body{&#10;background:#eef3f8;&#10;padding:30px;&#10;}&#10;&#10;.wrapper{&#10;max-width:760px;&#10;margin:auto;&#10;background:#fff;&#10;border-radius:18px;&#10;overflow:hidden;&#10;box-shadow:0 12px 35px rgba(0,0,0,.15);&#10;}&#10;&#10;.header{&#10;background:linear-gradient(135deg,#b30000,#d62828,#ff5a5f);&#10;padding:40px;&#10;text-align:center;&#10;color:white;&#10;}&#10;&#10;.logo{&#10;font-size:36px;&#10;font-weight:bold;&#10;}&#10;&#10;.tagline{&#10;margin-top:8px;&#10;font-size:15px;&#10;opacity:.9;&#10;}&#10;&#10;.hero{&#10;padding:35px;&#10;text-align:center;&#10;background:#fff7f7;&#10;}&#10;&#10;.hero h2{&#10;color:#b30000;&#10;margin-bottom:12px;&#10;}&#10;&#10;.hero p{&#10;font-size:15px;&#10;line-height:28px;&#10;color:#555;&#10;}&#10;&#10;.alert{&#10;margin:25px;&#10;padding:20px;&#10;background:#fdeaea;&#10;border-left:6px solid #d62828;&#10;border-radius:10px;&#10;font-size:16px;&#10;font-weight:bold;&#10;color:#b30000;&#10;}&#10;&#10;.card{&#10;margin:30px;&#10;border:1px solid #e5e5e5;&#10;border-radius:15px;&#10;overflow:hidden;&#10;}&#10;&#10;.card-title{&#10;background:#b30000;&#10;color:white;&#10;padding:18px;&#10;font-size:20px;&#10;font-weight:bold;&#10;}&#10;&#10;table{&#10;width:100%;&#10;border-collapse:collapse;&#10;}&#10;&#10;td{&#10;padding:18px;&#10;border-bottom:1px solid #eeeeee;&#10;}&#10;&#10;td:first-child{&#10;width:38%;&#10;background:#fafafa;&#10;font-weight:bold;&#10;color:#555;&#10;}&#10;&#10;.acc{&#10;font-size:22px;&#10;font-weight:bold;&#10;color:#0056B3;&#10;}&#10;&#10;.status{&#10;background:#ffe5e5;&#10;color:#b30000;&#10;padding:6px 18px;&#10;border-radius:20px;&#10;font-weight:bold;&#10;}&#10;&#10;.note{&#10;margin:0 30px 30px;&#10;padding:22px;&#10;background:#fff9e8;&#10;border-left:6px solid orange;&#10;border-radius:10px;&#10;}&#10;&#10;.note h3{&#10;color:#c97b00;&#10;margin-bottom:10px;&#10;}&#10;&#10;.note li{&#10;margin:10px 0;&#10;}&#10;&#10;.footer{&#10;background:#002B5B;&#10;padding:35px;&#10;text-align:center;&#10;color:white;&#10;}&#10;&#10;.footer p{&#10;line-height:24px;&#10;font-size:13px;&#10;}&#10;&#10;.support{&#10;margin-top:18px;&#10;padding-top:18px;&#10;border-top:1px solid rgba(255,255,255,.2);&#10;}&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='wrapper'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&#10;&lt;div class='logo'&gt;&#10;🏦 &quot; ++ (vars.inputAttributes.bankName default &quot;REAL BANK&quot;) ++ &quot;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='tagline'&gt;&#10;Safe • Secure • Trusted Banking&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='hero'&gt;&#10;&#10;&lt;h2&gt;&#10;⚠ Account Already Exists&#10;&lt;/h2&gt;&#10;&#10;&lt;p&gt;&#10;&#10;Dear &lt;b&gt;&quot; ++ upper(vars.inputPayload.FullName default &quot;CUSTOMER&quot;) ++ &quot;&lt;/b&gt;,&#10;&#10;&lt;br&gt;&lt;br&gt;&#10;&#10;Our records indicate that an account already exists with the information you provided.&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='alert'&gt;&#10;&#10;❌ &quot; ++ (payload.message default &quot;An account already exists with the provided customer details.&quot;) ++ &quot;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='card'&gt;&#10;&#10;&lt;div class='card-title'&gt;&#10;📋 Existing Account Details&#10;&lt;/div&gt;&#10;&#10;&lt;table&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;👤 Customer Name&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (vars.inputPayload.FullName default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;🏦 Bank Name&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (vars.inputAttributes.bankName default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;💳 Existing Account Number&lt;/td&gt;&#10;&lt;td class='acc'&gt;&quot; ++ (payload.ACCOUNTNUMBER default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;🪪 Aadhaar Number&lt;/td&gt;&#10;&lt;td&gt;XXXX XXXX &quot; ++ (((vars.inputAttributes.adharNumber default &quot;&quot;) as String)[-4 to -1]) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;📧 Email&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (vars.inputPayload.email default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;📱 Mobile Number&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (vars.inputPayload.mobileNumber default &quot;&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Account Status&lt;/td&gt;&#10;&lt;td&gt;&lt;span class='status'&gt;FAILED&lt;/span&gt;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Status Code&lt;/td&gt;&#10;&lt;td&gt;&quot; ++ (payload.statusCode default &quot;409&quot;) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;/table&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='note'&gt;&#10;&#10;&lt;h3&gt;ℹ What You Can Do Next&lt;/h3&gt;&#10;&#10;&lt;ul&gt;&#10;&#10;&lt;li&gt;Verify your Aadhaar Number and Email Address.&lt;/li&gt;&#10;&#10;&lt;li&gt;If you already have an account, please use your existing credentials.&lt;/li&gt;&#10;&#10;&lt;li&gt;If you believe this is incorrect, contact Customer Support.&lt;/li&gt;&#10;&#10;&lt;li&gt;Do not create duplicate accounts using the same details.&lt;/li&gt;&#10;&#10;&lt;/ul&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;&#10;&lt;h3&gt;&#10;Thank You for Banking With Us ❤️&#10;&lt;/h3&gt;&#10;&#10;&lt;p&gt;&#10;&#10;Customer Care : +91 9494207062&#10;&#10;&lt;br&gt;&#10;&#10;Email : narsingbeesetti22@gmail.com&#10;&#10;&lt;br&gt;&lt;br&gt;&#10;&#10;© 2026 Real Bank&#10;&#10;&lt;br&gt;&#10;&#10;Safe Banking | Digital Banking | Secure Transactions&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;div class='support'&gt;&#10;&#10;This is an automated email. Please do not reply.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&quot;]" doc:name="emailBody" doc:id="b4b28652-44e4-42d0-9e81-fb1455d90758" variableName="emailBody" />
+		<parse-template doc:name="creating html templete with user data for user email conformation " doc:id="2b5736e6-ac5b-4635-b4b9-1c16c21b65bc" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+		</parse-template>
+		<email:send doc:name="email send to the respective users with the respective bank data" doc:id="49ec191c-c4da-487e-907c-e6bbc19f539c" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account already existed in database - " ++ vars.inputAttributes.bankName]' >
+			<email:to-addresses >
+				<email:to-address value="#[vars.inputPayload.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" encoding="UTF-8" />
+		</email:send>
+	</flow>
+</mule>

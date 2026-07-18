@@ -59,6 +59,12 @@
     "9a57d9ed-cca9-4102-a7d0-4b7d9c235c1a": {
       "payload": "sample_data/list_json_1.json",
       "vars-db": "sample_data/list_java_6.dwl"
+    },
+    "da6e32f5-23ba-4073-9ec2-8d7ca3871582": {
+      "vars-inputAttributes": "sample_data/json_5.json",
+      "vars-inputPayload": "sample_data/Weave_1.dwl",
+      "vars-ifsc": "sample_data/defaultstringtype_7.dwl",
+      "vars-accountNumber": "sample_data/defaultstringtype_1.json"
     }
   }
 }

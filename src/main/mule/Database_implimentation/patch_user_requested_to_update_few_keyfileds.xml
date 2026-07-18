@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd">
+	<flow name="patch_user_requested_to_update_few_keyfileds_flow" doc:id="ff17861f-f14a-492c-a98e-f0f8758f014f" >
+		<logger level="INFO" doc:name="Request recieved to database implimentation flow" doc:id="8276cb69-07ec-44c8-b264-40bc49af15f7" message="------------Request recieved to database implimentation flow-------Before DB--------------" />
+		<snowflake:update doc:name="Update requested data by the user" doc:id="64599bc9-54e4-4b79-ab8a-ca5f5b77eff6" config-ref="Snowflake_Config" target="dbresponse" >
+			<snowflake:sql ><![CDATA[UPDATE bank_customer_data
+SET FULLNAME =:FullName,
+    ADDRESS =:address,
+    MOBILENUMBER =:mobileNumber
+WHERE ACCOUNTNUMBER =:accountNumber]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	FullName: vars.inputpayload.FullName,
+	address: vars.inputpayload.address,
+	mobileNumber: vars.inputpayload.mobileNumber,
+	accountNumber: vars.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:update>
+		<logger level="INFO" doc:name="After Database implementation flow" doc:id="5ceb6fbc-3d22-4050-ab25-893e390e6dd1" message="----------------------After Database implementation------------------#[payload]" />
+	</flow>
+</mule>

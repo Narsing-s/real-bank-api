@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="patch_update_few_keyfileds_requested_by_user_email_flow" doc:id="fbe15baf-37f7-4fea-98c3-3afe8cda98bd" >
+		<logger level="INFO" doc:name="request reieved to email implementation flow" doc:id="d5d00482-aee3-46b3-b196-e9dc796affb2" message="==========request reieved to email implementation flow==========" />
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&#10;&lt;style&gt;&#10;body {&#10;    margin: 0;&#10;    padding: 40px 0;&#10;    background: #f4f7fb;&#10;    font-family: Arial, Helvetica, sans-serif;&#10;}&#10;&#10;.container {&#10;    width: 680px;&#10;    margin: auto;&#10;    background: #ffffff;&#10;    border-radius: 16px;&#10;    overflow: hidden;&#10;    box-shadow: 0 12px 35px rgba(0, 0, 0, .12);&#10;}&#10;&#10;.header {&#10;    background: linear-gradient(90deg, #0047AB, #0066CC);&#10;    color: white;&#10;    text-align: center;&#10;    padding: 35px;&#10;}&#10;&#10;.logo {&#10;    font-size: 32px;&#10;    font-weight: bold;&#10;}&#10;&#10;.tagline {&#10;    margin-top: 8px;&#10;    font-size: 14px;&#10;    opacity: .9;&#10;}&#10;&#10;.success {&#10;    text-align: center;&#10;    padding: 35px 30px;&#10;}&#10;&#10;.icon {&#10;    width: 90px;&#10;    height: 90px;&#10;    line-height: 90px;&#10;    margin: auto;&#10;    border-radius: 50%;&#10;    background: #16a34a;&#10;    color: white;&#10;    font-size: 42px;&#10;}&#10;&#10;.success h2 {&#10;    color: #16a34a;&#10;    margin-top: 20px;&#10;    margin-bottom: 10px;&#10;}&#10;&#10;.success p {&#10;    color: #555;&#10;    line-height: 1.6;&#10;}&#10;&#10;.card {&#10;    margin: 30px;&#10;    border: 1px solid #e5e7eb;&#10;    border-radius: 12px;&#10;    overflow: hidden;&#10;}&#10;&#10;.card-title {&#10;    background: #f8fafc;&#10;    color: #003366;&#10;    font-size: 20px;&#10;    font-weight: bold;&#10;    padding: 18px;&#10;}&#10;&#10;table {&#10;    width: 100%;&#10;    border-collapse: collapse;&#10;}&#10;&#10;td {&#10;    padding: 16px;&#10;    border-bottom: 1px solid #ececec;&#10;}&#10;&#10;.label {&#10;    width: 40%;&#10;    font-weight: bold;&#10;    color: #555;&#10;}&#10;&#10;.value {&#10;    color: #111827;&#10;}&#10;&#10;.status {&#10;    color: #16a34a;&#10;    font-weight: bold;&#10;}&#10;&#10;.notice {&#10;    margin: 30px;&#10;    background: #eef7ff;&#10;    border-left: 6px solid #2196F3;&#10;    padding: 20px;&#10;    border-radius: 8px;&#10;    color: #444;&#10;}&#10;&#10;.footer {&#10;    background: #f8fafc;&#10;    text-align: center;&#10;    padding: 30px;&#10;    font-size: 13px;&#10;    color: #666;&#10;}&#10;&#10;.footer b {&#10;    color: #003366;&#10;}&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='container'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;    &lt;div class='bank'&gt;&#10;        🏦 &quot; ++ (payload.BANKNAME[0] default &quot;N/A&quot;) ++ &quot;&#10;    &lt;/div&gt;&#10;    &lt;div class='tagline'&gt;&#10;        Safe • Secure • Digital Banking&#10;    &lt;/div&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='success'&gt;&#10;    &lt;div class='icon'&gt;✓&lt;/div&gt;&#10;    &lt;h2&gt;Account Updated Successfully&lt;/h2&gt;&#10;    &lt;p&gt;&#10;        Dear &lt;b&gt;&quot; ++ (vars.inputPayload.FullName default &quot;Customer&quot;) ++ &quot;&lt;/b&gt;,&#10;        &lt;br/&gt;&lt;br/&gt;&#10;        Your account information has been successfully updated in our banking system.&#10;    &lt;/p&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='card'&gt;&#10;    &lt;div class='card-title'&gt;Updated Account Details&lt;/div&gt;&#10;    &lt;table&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Reference Number&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.transactionId default &quot;RBK-&quot; ++ (now() as String {format: &quot;yyyyMMddHHmmss&quot;})) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Account Number&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.accountNumber default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Customer Name&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.inputPayload.FullName default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Mobile Number&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.inputPayload.mobileNumber default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Email Address&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.email default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Aadhaar&lt;/td&gt;&#10;            &lt;td class='value'&gt;XXXX XXXX &quot; ++ ((vars.adharNumber as String default &quot;XXXX XXXX&quot;)[-4 to -1]) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Address&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.inputpayload.address default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Bank Name&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (vars.BANKNAME default &quot;N/A&quot;) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Updated On&lt;/td&gt;&#10;            &lt;td class='value'&gt;&quot; ++ (now() as String {format: &quot;dd MMM yyyy hh:mm:ss a&quot;}) ++ &quot;&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;        &lt;tr&gt;&#10;            &lt;td class='label'&gt;Status&lt;/td&gt;&#10;            &lt;td class='value status'&gt;SUCCESS&lt;/td&gt;&#10;        &lt;/tr&gt;&#10;    &lt;/table&gt;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='notice'&gt;&#10;    &lt;b&gt;🔒 Security Notice&lt;/b&gt;&#10;    &lt;br/&gt;&lt;br/&gt;&#10;    If you did not request this account update, please contact our 24×7 Customer Care immediately. Protect your banking credentials and never share your OTP, PIN, CVV, or passwords with anyone.&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;    &lt;b&gt;Real Bank&lt;/b&gt;&#10;    &lt;br/&gt;&lt;br/&gt;&#10;    📞 Customer Care: +91 9494207062&#10;    &lt;br/&gt;&#10;    ✉ support@realbank.com&#10;    &lt;br/&gt;&#10;    🌐 www.realbank.com&#10;    &lt;br/&gt;&lt;br/&gt;&#10;    © 2026 Real Bank. All Rights Reserved.&#10;    &lt;br/&gt;&lt;br/&gt;&#10;    This is an automated notification. Please do not reply to this email.&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&#10;&lt;/html&gt;&quot;]" doc:name="emailBody" doc:id="c9ed9eb6-1ef8-4325-94b3-9f3f0532b779" variableName="emailBody" />
+		<parse-template doc:name="creating html templete with user data for user email conformation " doc:id="7e6fa5f4-95aa-4b6e-b384-7316d7562b1f" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+		</parse-template>
+		<email:send doc:name="email send to the respective users with the respective bank data" doc:id="cd249647-02ca-4582-acaf-d7eabb7603f4" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Account detailes updated successfully - " ++ vars.BANKNAME]' >
+			<email:to-addresses >
+				<email:to-address value="#[vars.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" encoding="UTF-8" />
+		</email:send>
+		<logger level="INFO" doc:name="after email send to the repective user with thier account detailes" doc:id="71ba950c-0afc-4f66-bb96-ceb161d88955" message="=========after email send to the repective user with thier account detailes===========" />
+	</flow>
+</mule>

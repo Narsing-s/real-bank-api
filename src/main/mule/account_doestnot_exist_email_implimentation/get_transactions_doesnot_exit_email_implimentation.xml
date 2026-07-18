@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="get_transactions_doesnot_exit_email_implimentationFlow" doc:id="e480376a-55ad-4eee-9dde-25d9e88fbafb" >
+		<logger level="INFO" doc:name="request reieved to email implementation flow" doc:id="3d2344c8-d49a-4ee4-9d36-663a310fcacd" message="==========request reieved to email implementation flow==========" />
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset='UTF-8'&gt;&#10;&lt;title&gt;Real Bank - Account Not Found&lt;/title&gt;&#10;&#10;&lt;style&gt;&#10;*{&#10;margin:0;&#10;padding:0;&#10;box-sizing:border-box;&#10;font-family:'Segoe UI',Arial,sans-serif;&#10;}&#10;&#10;body{&#10;background:#edf2f7;&#10;padding:30px;&#10;color:#333;&#10;}&#10;&#10;.wrapper{&#10;max-width:760px;&#10;margin:auto;&#10;background:#fff;&#10;border-radius:18px;&#10;overflow:hidden;&#10;box-shadow:0 15px 35px rgba(0,0,0,.15);&#10;}&#10;&#10;.header{&#10;background:linear-gradient(135deg,#8B0000,#C62828,#E53935);&#10;padding:40px;&#10;text-align:center;&#10;color:#fff;&#10;}&#10;&#10;.logo{&#10;font-size:36px;&#10;font-weight:bold;&#10;}&#10;&#10;.tagline{&#10;margin-top:8px;&#10;font-size:15px;&#10;opacity:.9;&#10;}&#10;&#10;.hero{&#10;padding:35px;&#10;background:#FFF5F5;&#10;text-align:center;&#10;}&#10;&#10;.hero h2{&#10;color:#C62828;&#10;font-size:30px;&#10;margin-bottom:15px;&#10;}&#10;&#10;.hero p{&#10;font-size:15px;&#10;line-height:28px;&#10;color:#666;&#10;}&#10;&#10;.alert{&#10;margin:25px;&#10;padding:20px;&#10;background:#FDECEC;&#10;border-left:6px solid #D32F2F;&#10;border-radius:10px;&#10;color:#B71C1C;&#10;font-size:17px;&#10;font-weight:bold;&#10;text-align:center;&#10;}&#10;&#10;.card{&#10;margin:30px;&#10;border:1px solid #E5E5E5;&#10;border-radius:15px;&#10;overflow:hidden;&#10;}&#10;&#10;.card-title{&#10;background:#C62828;&#10;color:#fff;&#10;padding:18px;&#10;font-size:20px;&#10;font-weight:bold;&#10;}&#10;&#10;table{&#10;width:100%;&#10;border-collapse:collapse;&#10;}&#10;&#10;td{&#10;padding:16px;&#10;border-bottom:1px solid #EEEEEE;&#10;}&#10;&#10;td:first-child{&#10;background:#FAFAFA;&#10;font-weight:bold;&#10;width:40%;&#10;color:#555;&#10;}&#10;&#10;.status{&#10;background:#FDECEC;&#10;color:#C62828;&#10;padding:6px 15px;&#10;border-radius:25px;&#10;font-weight:bold;&#10;display:inline-block;&#10;}&#10;&#10;.acc{&#10;font-size:22px;&#10;font-weight:bold;&#10;color:#0056B3;&#10;}&#10;&#10;.info{&#10;margin:30px;&#10;padding:22px;&#10;background:#FFF8E8;&#10;border-left:6px solid #F59E0B;&#10;border-radius:10px;&#10;}&#10;&#10;.info h3{&#10;margin-bottom:15px;&#10;color:#B45309;&#10;}&#10;&#10;.info ul{&#10;padding-left:20px;&#10;}&#10;&#10;.info li{&#10;margin-bottom:10px;&#10;line-height:24px;&#10;}&#10;&#10;.footer{&#10;background:#002B5B;&#10;color:#fff;&#10;padding:35px;&#10;text-align:center;&#10;font-size:13px;&#10;line-height:24px;&#10;}&#10;&#10;.support{&#10;margin-top:20px;&#10;padding-top:20px;&#10;border-top:1px solid rgba(255,255,255,.2);&#10;}&#10;&lt;/style&gt;&#10;&#10;&lt;/head&gt;&#10;&#10;&lt;body&gt;&#10;&#10;&lt;div class='wrapper'&gt;&#10;&#10;&lt;div class='header'&gt;&#10;&#10;&lt;div class='logo'&gt;&#10;🏦 REAL BANK&#10;&lt;/div&gt;&#10;&#10;&lt;div class='tagline'&gt;&#10;Safe • Secure • Trusted Banking&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='hero'&gt;&#10;&#10;&lt;h2&gt;&#10;❌ Account Verification Failed&#10;&lt;/h2&gt;&#10;&#10;&lt;p&gt;&#10;&#10;We could not locate any account associated with the customer details you provided.&#10;&#10;Please verify your information and try again.&#10;&#10;&lt;/p&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='alert'&gt;&#10;&#10;⚠ No account was found with the provided customer details.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='card'&gt;&#10;&#10;&lt;div class='card-title'&gt;&#10;&#10;📄 Verification Summary&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;table&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Status&lt;/td&gt;&#10;&lt;td&gt;&lt;span class='status'&gt;FAILED&lt;/span&gt;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Status Code&lt;/td&gt;&#10;&lt;td&gt;404&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Account Number&lt;/td&gt;&#10;&lt;td class='acc'&gt;&quot; ++ ((vars.accountNumber default &quot;Unknown&quot;) as String) ++ &quot;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;tr&gt;&#10;&lt;td&gt;Message&lt;/td&gt;&#10;&lt;td&gt;&#10;An account does not exist with the provided customer details.&#10;Please verify your information or register as a new customer if you do not already have an account.&#10;&lt;/td&gt;&#10;&lt;/tr&gt;&#10;&#10;&lt;/table&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='info'&gt;&#10;&#10;&lt;h3&gt;&#10;💡 What You Can Do&#10;&lt;/h3&gt;&#10;&#10;&lt;ul&gt;&#10;&#10;&lt;li&gt;Verify that the Account Number is correct.&lt;/li&gt;&#10;&#10;&lt;li&gt;Check your registered Email Address and Aadhaar Number.&lt;/li&gt;&#10;&#10;&lt;li&gt;If you are a new customer, please create a new account.&lt;/li&gt;&#10;&#10;&lt;li&gt;If you believe this is an error, contact Real Bank Customer Support.&lt;/li&gt;&#10;&#10;&lt;/ul&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;div class='footer'&gt;&#10;&#10;&lt;b&gt;Thank You For Banking With Real Bank ❤️&lt;/b&gt;&#10;&#10;&lt;br&gt;&lt;br&gt;&#10;&#10;Customer Care : +91 9494207062&#10;&#10;&lt;br&gt;&#10;&#10;Email : narsingbeesetti22@gmail.com&#10;&#10;&lt;br&gt;&lt;br&gt;&#10;&#10;© 2026 Real Bank&#10;&#10;&lt;br&gt;&#10;&#10;Safe Banking | Digital Banking | Secure Transactions&#10;&#10;&lt;div class='support'&gt;&#10;&#10;This is an automated email. Please do not reply.&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/div&gt;&#10;&#10;&lt;/body&gt;&#10;&#10;&lt;/html&gt;&quot;]" doc:name="emailBody" doc:id="032e126b-f84a-43a5-b58a-789677480fe2" variableName="emailBody" />
+		<parse-template doc:name="creating html templete with user data for user email conformation " doc:id="3deaf495-ddef-47c5-816e-1c4693aab0ca" >
+			<content >&lt;html&gt;
+&lt;head&gt;
+    &lt;style&gt;
+        body {
+            text-align: center;
+        }
+
+        table {
+            margin: 0 auto;
+            height: 20vh;
+            width: 40vh;
+        }
+
+        h1 {
+            color: green;
+        }
+        h6 {
+            color: red;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h3&gt;#[vars.emailBody]&lt;/h3&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</content>
+		</parse-template>
+		<email:send doc:name="email send to the respective users with the respective bank data" doc:id="5c2b653f-eda0-4e20-bf63-e42d305c8888" config-ref="Email_SMTP" fromAddress="narsingbeesetti06@gmail.com" subject='#["Your Account detailes -" ++ vars.bankname as String]' >
+			<email:to-addresses >
+				<email:to-address value="#[vars.email]" />
+			</email:to-addresses>
+			<email:body contentType="text/html" encoding="UTF-8" />
+		</email:send>
+		<logger level="INFO" doc:name="after email send to the repective user with thier account detailes" doc:id="18008667-5863-40e6-a1c8-6c836114778b" message="=========after email send to the repective user with thier account detailes===========" />
+	</flow>
+</mule>

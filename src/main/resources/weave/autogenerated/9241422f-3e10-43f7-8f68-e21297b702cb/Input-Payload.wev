@@ -1,0 +1,26 @@
+%dw 2.0
+
+type auto_9241422f_3e10_43f7_8f68_e21297b702cb_Input_Payload = {|
+  bank_account_detailes: {|
+    account_data: {|
+      status: String, 
+      statusCode: Number, 
+      message: String, 
+      accountCreatedTimestamp: DateTime, 
+      accountNumber: String, 
+      bankName: "ICICI" | "YES" | "HDFC" | "SBI" | "APGIVB" | "AXIS", 
+      ifsc_code: String {"typeAlias": "auto_0fc918a4-1e22-4d9a-b394-40e9826ae236_Output-Variables-ifsc"}, 
+      user_input_data: {|
+        data: {
+          address: String, 
+          mobileNumber: String, 
+          FullName: String, 
+          dateOfBirth: String, 
+          email: String, 
+          _?: Any
+        } | Null
+      |}
+    |}
+  |}
+|}
+

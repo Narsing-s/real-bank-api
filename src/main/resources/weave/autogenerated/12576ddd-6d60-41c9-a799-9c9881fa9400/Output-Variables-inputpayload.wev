@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_12576ddd_6d60_41c9_a799_9c9881fa9400_Output_Variables_inputpayload = Array<{|  CUSTOMER_ID?: Number,   FULLNAME?: String,   DATEOFBIRTH?: Date,   MOBILENUMBER?: String,   BANKNAME?: String,   EMAIL?: String,   ADDRESS?: String,   ADHARNUMBER?: String,   ACCOUNTNUMBER?: String,   TRANSACTIONS?: String,   STATUS?: String,   CREATED_AT?: Date,   BALANCE?: String,   EMAIL_SENT?: Boolean,   IFSC_CODE?: String,   BRANCH_NAME?: String|}> | Null
+

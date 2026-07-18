@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule
+    xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+    xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake"
+    xmlns:email="http://www.mulesoft.org/schema/mule/email"
+    xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+    xmlns:file="http://www.mulesoft.org/schema/mule/file"
+    xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq"
+    xmlns:mqtt3="http://www.mulesoft.org/schema/mule/mqtt3"
+
+    xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/anypoint-mq http://www.mulesoft.org/schema/mule/anypoint-mq/current/mule-anypoint-mq.xsd
+http://www.mulesoft.org/schema/mule/mqtt3 http://www.mulesoft.org/schema/mule/mqtt3/current/mule-mqtt3.xsd">
+	<flow name="delete:\accounts\(accountNumber):real-bank-api-config">
+		<logger level="INFO" doc:name="Start Flow" doc:id="7fce84c5-3faa-4835-82fc-45e9cc1d68a0" message="----------------------------------Start Flow------------------------------" />
+		<set-variable value="#[attributes.uriParams.accountNumber as String]" doc:name="accountNumber" doc:id="039eb72e-141e-42b6-937c-40b08d5ea259" variableName="accountNumber" />
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;var inp = []&#10;---&#10;inp&lt;&lt;payload reduce ((item, accumulator) -&gt; item)]" doc:name="inputpayload" doc:id="ff6570de-f27b-4196-bb8d-4a758802e84b" variableName="inputpayload" />
+		<logger level="INFO" doc:name="Before DB" doc:id="38937fea-e3b4-4f9a-a57a-5b5e4136dd0e" message="-----------------Before DB------------" />
+		<snowflake:select doc:name="verify account" doc:id="11f2ccc3-1fe9-4313-b3e4-c395bf90f2ed" config-ref="Snowflake_Config">
+			<snowflake:sql><![CDATA[select * from bank_customer_data where accountNumber = :ACCOUNTNUMBER]]></snowflake:sql>
+			<snowflake:input-parameters><![CDATA[#[{
+	"ACCOUNTNUMBER": attributes.uriParams.accountNumber
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<set-variable value="#[payload.FULLNAME]" doc:name="FULLNAME" doc:id="61a68c8a-261a-40a9-bb3b-1ce4cb352874" variableName="FULLNAME" />
+		<logger level="INFO" doc:name="After DB" doc:id="1f14d2de-e1f1-4bfa-a4b4-903b0fc7c534" message="---------------After DB------------" />
+		<choice doc:name="Choice" doc:id="dac95659-ad02-425b-b7a9-4f82f0161dcb" >
+			<when expression="#[sizeOf(payload) == 0]" >
+				<flow-ref doc:name="calling user does not exist emil implementation flow" doc:id="286143bc-bf0b-4cc2-8eaa-f6b74856e60d" name="delete_account_doesnot_exist_email_implimentation_flow"/>
+				<ee:transform doc:name="Account doesn't exit" doc:id="dc3bdf79-94cf-469f-857e-8c2c604078c8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": "FAILED",
+	"statusCode": 404,
+	"message": "Account doesn't exist please try with correct account number",
+	"accountNumber": vars.accountNumber
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="fac01218-31f6-4117-a355-72d6609cccc2" message="-------------End Flow----#[payload]" />
+			</when>
+			<otherwise >
+				<set-variable value="#[payload.EMAIL[0]]" doc:name="email" doc:id="f068fcaf-2531-46ad-b1b7-bb1994fb4a74" variableName="email" />
+				<set-variable value="#[payload.BANKNAME[0]]" doc:name="bankname" doc:id="b70cdc16-0efa-4b6d-8f40-1e074ed8f25a" variableName="bankname" />
+				<flow-ref doc:name="calling delete account email implimentation flow requested by the user or bank staff becausee the user is no longer" doc:id="33118085-032b-4490-84d0-8d435d0ebe3c" name="delete_account_number_flow"/>
+				<logger level="INFO" doc:name="Response recieved from the email implementation flow" doc:id="ad1898ec-9da1-4b57-a65f-cfa98772a86b" message="==========Response recieved from the email implementation flow============"/>
+				<logger level="INFO" doc:name="Request sent to the  delete database implimentation flow" doc:id="cb1126cf-f77d-465b-a7f6-ba819e98bd24" message="============Request sent to the  delete database implimentation flow========="/>
+				<flow-ref doc:name="calling delete account database flow to delete the account data from the database as requested by the user or bank staff becausee the user is no longer" doc:id="34740140-6ca6-4f93-a88a-7a13ef8995ef" name="delete_accountNumber_from_database_flow"/>
+				<logger level="INFO" doc:name="Response recieved from the delete database implimentation flow" doc:id="ea6e6b31-2e1f-4e95-a1c6-a73321a0ff6c" message="===========Response recieved from the delete database implimentation flow============="/>
+				<ee:transform doc:name="response" doc:id="1f158966-1a92-42e5-8837-2cafd60ca691" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	bank_account_detailes: {
+		"account_data": {
+			"message": "The account has been deactivated successfully, and an email has been sent to the user.",
+			"accountNumber": vars.accountNumber
+		}
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="End Flow" doc:id="b16d68c1-b06e-46a3-b694-fde035f24f67" message="#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+	
+	
+	
+	</mule>

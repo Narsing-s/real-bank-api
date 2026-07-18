@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_cc243cf1_f8e7_4b90_ba1b_5960fbb25857_Output_Variables_inputAttributes = {|
+  adharNumber: String, 
+  bankName: "ICICI" | "YES" | "HDFC" | "SBI" | "APGIVB" | "AXIS"
+|}
+

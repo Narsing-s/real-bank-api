@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_42d65e20_1c7b_44dd_a81a_c2793aba6857_Input_Variables_amount = Number
+
