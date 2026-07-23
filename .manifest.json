@@ -1,0 +1,251 @@
+{
+  "sdkGenVersion": "1.7.1",
+  "date": "2026-07-23T05:00:03.169Z",
+  "config": {
+    "sdkVersion": "1.1.0",
+    "languages": [
+      "typescript"
+    ],
+    "deliveryMethods": [
+      "zip"
+    ],
+    "sdkName": "real-bank-api-auto-sdk",
+    "languageOptions": {
+      "python": {
+        "alwaysInitializeOptionals": false,
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "typescript": {
+        "bundle": true,
+        "exportClassDefault": false,
+        "httpClient": "fetch",
+        "ignoreFiles": [],
+        "liblabVersion": "2",
+        "generateEnumAs": "union"
+      },
+      "go": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "java": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "php": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "csharp": {
+        "ignoreFiles": [],
+        "liblabVersion": "2",
+        "renameIllegalModelProperties": true,
+        "useOptionalWrapper": true,
+        "validateResponses": false
+      },
+      "cli": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "kotlin": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "ruby": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      },
+      "rust": {
+        "ignoreFiles": [],
+        "liblabVersion": "2"
+      }
+    },
+    "customCode": {
+      "trackChanges": true,
+      "conflictStrategy": "mark"
+    },
+    "publishing": {
+      "releaseBranch": "main"
+    },
+    "httpClient": "fetch",
+    "bundle": true,
+    "exportClassDefault": false,
+    "ignoreFiles": [],
+    "liblabVersion": "2",
+    "generateEnumAs": "union",
+    "language": "typescript",
+    "deliveryMethod": "zip",
+    "hooks": {
+      "enabled": false,
+      "sourceDir": ""
+    },
+    "typescriptVersion": "5.3.3",
+    "zodVersion": "3.22.3",
+    "compilerOptions": {
+      "target": "es6",
+      "module": "Node16",
+      "lib": [
+        "es2018",
+        "dom",
+        "DOM.Iterable"
+      ]
+    },
+    "namingStrategy": "base",
+    "usesFormData": false,
+    "authentication": {},
+    "environmentVariables": [],
+    "fileOutput": "/tmp",
+    "inferServiceNames": false,
+    "httpLibrary": {
+      "name": "fetch",
+      "packages": {},
+      "languages": [
+        "typescript"
+      ],
+      "types": {
+        "packageName": "@types/isomorphic-fetch",
+        "version": "^0.0.36"
+      }
+    },
+    "auth": [],
+    "retry": {
+      "enabled": true,
+      "maxAttempts": 3,
+      "retryDelay": 150,
+      "maxDelay": 5000,
+      "retryDelayJitter": 50,
+      "backOffFactor": 2,
+      "httpMethodsToRetry": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS"
+      ],
+      "maxRetryAfterDelay": 60000
+    },
+    "multiTenant": false,
+    "customQueries": {
+      "paths": [],
+      "rawQueries": [],
+      "queriesData": []
+    },
+    "devContainer": false,
+    "ai": false,
+    "fernMode": false,
+    "includeOptionalSnippetParameters": true,
+    "responseHeaders": false,
+    "specType": "postman",
+    "deprecatedOperations": {
+      "include": true
+    },
+    "multipleResponses": {
+      "enabled": false
+    }
+  },
+  "files": [
+    "package.json",
+    "tsconfig.json",
+    "examples/tsconfig.json",
+    ".gitignore",
+    "scripts/prepublish.sh",
+    ".github/workflows/release.yml",
+    ".env.example",
+    "examples/package.json",
+    "examples/README.md",
+    "examples/src/index.ts",
+    "src/http/client.ts",
+    "src/http/types.ts",
+    "src/http/error.ts",
+    "src/http/handlers/terminating-handler.ts",
+    "src/http/handlers/response-validation-handler.ts",
+    "src/http/handlers/request-validation-handler.ts",
+    "src/http/transport/request.ts",
+    "src/http/transport/request-builder.ts",
+    "src/http/transport/request-fetch-adapter.ts",
+    "src/http/transport/transport-hook-adapter.ts",
+    "src/http/errors/throwable-error.ts",
+    "src/http/handlers/retry-handler.ts",
+    "src/services/real-bank-api-auto-sdk/models/create-account-copy-request.ts",
+    "documentation/models/CreateAccountCopyRequest.md",
+    "src/services/base-service.ts",
+    "src/services/real-bank-api-auto-sdk/real-bank-api-auto-sdk-service.ts",
+    "src/index.ts",
+    "src/services/real-bank-api-auto-sdk/models/index.ts",
+    "src/services/real-bank-api-auto-sdk/index.ts",
+    "src/http/index.ts",
+    "src/http/handlers/handler-chain.ts",
+    "documentation/snippets/snippets.json",
+    "src/services/real-bank-api-auto-sdk/request-params.ts",
+    "src/http/handlers/hook-handler.ts",
+    "src/http/hooks/custom-hook.ts",
+    "src/http/hooks/hook.ts",
+    "src/http/environment.ts",
+    "src/http/serialization/base-serializer.ts",
+    "src/http/serialization/query-serializer.ts",
+    "src/http/serialization/path-serializer.ts",
+    "src/http/serialization/header-serializer.ts",
+    "src/http/serialization/cookie-serializer.ts",
+    "src/http/transport/types.ts",
+    "src/http/utils/line-decoder.ts",
+    "src/http/utils/response-matcher.ts",
+    "src/http/utils/content-type.ts",
+    "src/http/errors/validation-error.ts",
+    "documentation/services/RealBankApiAutoSdkService.md",
+    "README.md"
+  ],
+  "fileHashes": {
+    ".env.example": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".github/workflows/release.yml": "ae0035abb78ce51cf5c46bd681c021e079f7ce3e5f37319f6ff8d455721e3c70",
+    ".gitignore": "5f515684cbf8243009414e638b28e93a70a884b81e3e16c38bb01124419e44b2",
+    "README.md": "f681e8985c4219546a3f1b9495fafb983ff6cd2ca0ef84874c5580884d9049f8",
+    "documentation/models/CreateAccountCopyRequest.md": "6b65daf2cd7f431f9a187f0da637ba83a9db9a239dbd4a413e15bd3e243eea3b",
+    "documentation/services/RealBankApiAutoSdkService.md": "22bdbd3542df5b4e26b31f9e11c679cf664d5719dd1791d3b3c767d3899ca520",
+    "documentation/snippets/snippets.json": "78dc43e9abb2e38b2c6124a1505d7f7aca7d1b76b94750d26071a361824868f6",
+    "examples/README.md": "9b75aedf7aedd67e82eb3acbb64e9c748a1b432714bd2ba38f5c7ce4d3c458f1",
+    "examples/package.json": "8cda2ce69a8503c6b4873b560aabef08359cad26000970fbe81bf581ef161a19",
+    "examples/src/index.ts": "f9fba46fb13309992526e1ae0ca3791c8d86c048908c85084e7da63793cb2991",
+    "examples/tsconfig.json": "e579a7e4376879a28f9efc87311e036b44acef879d2851690d26526509856d63",
+    "package.json": "c80b1ee6e1d4e3b27f4ee1386a4ec78ab59a53dedbb9109d0b95a4cab2b850f1",
+    "prettier.config.js": "2fe33fda52344779fcf235afa8152cfd356880dc3161da09403dc26231bc72d9",
+    "scripts/prepublish.sh": "651cd87546cc25d69210f55dc4310d47007c53b719da1da8b3bd9acb098defcf",
+    "src/http/client.ts": "349c2725fbbeac67a4479fe1be2b8c0c3788ac8368ef722e3d1fdcd686f68717",
+    "src/http/environment.ts": "5ce8e80bcb52847e147c4430347256d5e656673c35b547481c0710b64417c972",
+    "src/http/error.ts": "095eb2f095a7868a5a1fcb4cf543560e143c06766c9693f9efb67b0601c242a5",
+    "src/http/errors/throwable-error.ts": "c23b141df9759e22cef65788738e3035a25b8d956ee5f873eddaf528a835ba6c",
+    "src/http/errors/validation-error.ts": "8835718fafeca5327ada4e6cbb7859f40d7460b98973812f2a012017bde8e2c8",
+    "src/http/handlers/handler-chain.ts": "7963ae4f81949a07b9265abd5c9aeef8f7b6d99260874f9e8d6f82a916d85699",
+    "src/http/handlers/hook-handler.ts": "76d8f964c374ccddc2f576976bd37773f39b1ee0bd67371903d0c655d954702d",
+    "src/http/handlers/request-validation-handler.ts": "bd1876f4ec4775443a3dfec45a4a46a19c6bfb00d4d5bcab4076bf424ef700d8",
+    "src/http/handlers/response-validation-handler.ts": "398e1eab415272fc6c061cd13d76c58d7517a5d18f0d54b4c4648ad15595a5f7",
+    "src/http/handlers/retry-handler.ts": "e80ec0f206fb5f52927433ddd1fe7ce300c90707be57a6cd0a4a5f34b9dc9c49",
+    "src/http/handlers/terminating-handler.ts": "8b820d772559c271507977bd3bc59b0afd979f5fc24397419dcb97059a3b076c",
+    "src/http/hooks/custom-hook.ts": "906e418d5f24ae314500dea157f0b101a179ff3c16ef8dbb158cce51ed306ee7",
+    "src/http/hooks/hook.ts": "6548e301970d9e7927540b554548d22a9bd5fd47c2bfd7136e9efcc186f8ffff",
+    "src/http/index.ts": "b8a007df51c54f0c9d55051963083dd347816921a6ec7d88f09c35d70fb9919c",
+    "src/http/serialization/base-serializer.ts": "91fb56323ba2f45af568ee4a02f7657bb7aac29112db52aa3ca71080d8837dce",
+    "src/http/serialization/cookie-serializer.ts": "c1dbf938f2071615638fa4e833b740948b16e28f98f475d38cf6701fa27bafb6",
+    "src/http/serialization/header-serializer.ts": "7409385d6841c188c50e08082d661111e89ed843f2954de973d291c95e948a38",
+    "src/http/serialization/path-serializer.ts": "e6f269f8d87aa3e3119e300899b118a7b03a3fe22c738b19a8ecfca2e750c91d",
+    "src/http/serialization/query-serializer.ts": "3a17740986421462d63a55e3b869ef5bb571a96e7077aec965b63f9a19705d47",
+    "src/http/transport/request-builder.ts": "921ae4eb8a8a4a2dfb938434d5b67b3da62a4163694def6a8c1c78ee7d256136",
+    "src/http/transport/request-fetch-adapter.ts": "b0450435eb0e943c6094438ff471cc3a2e138e046eb7724c5576aeba7dd4d938",
+    "src/http/transport/request.ts": "988ac664271ccc17eb327250f9e001291d9e8bce484ee958b666c1ebca6573e7",
+    "src/http/transport/transport-hook-adapter.ts": "97e375180a5ffe6328cbea3d84fce1f21b418ca8fbf81dcdb4a01579ca968ee1",
+    "src/http/transport/types.ts": "bed1de97b170ad9958b7287b5b49665504953f044661789fb0fe384f134430db",
+    "src/http/types.ts": "1394c3ed7f81adb0c3b14cb1bd9c5e82b2a54dfe32c041a7e82f3be3380c56ff",
+    "src/http/utils/content-type.ts": "992a513126a88ddd0243b83bd72e35e5d8c34afa0fcc47344f382631019d83ed",
+    "src/http/utils/line-decoder.ts": "69064c7c0be06a3dc8862a915667342a8f54ecb2d3be08566b7d2ae83c64e16b",
+    "src/http/utils/response-matcher.ts": "7870d29287e4f887348a25bf7bb2c0c6cce076baa6442c1787278bc883dd5a4c",
+    "src/index.ts": "a02b16f708ddb22a3154977c06eda23b50c7b5be9b41763d398883ad314894a4",
+    "src/services/base-service.ts": "d027d6529da77ba9a76768ebd4b1c3c2614c00eb3f1f6ebcd9d816179b469223",
+    "src/services/real-bank-api-auto-sdk/index.ts": "a36c02cefd0713a2b77a95cb46276041ba1c12dafda42159558220ab2f09c842",
+    "src/services/real-bank-api-auto-sdk/models/create-account-copy-request.ts": "0b6c3a03887f9cb94a7c2cb9394870a599c9d8843f1785cdb04f18c1eba75db4",
+    "src/services/real-bank-api-auto-sdk/models/index.ts": "753e6eb3200c0f5614776748ae9023ac3798ff0acfca43b78c68438f60d26d07",
+    "src/services/real-bank-api-auto-sdk/real-bank-api-auto-sdk-service.ts": "f9cde94a861ec5108fa0c3a141467a3f13cf8af5bb936ea187e053e5bf976bd7",
+    "src/services/real-bank-api-auto-sdk/request-params.ts": "e6d1cd779c382a72779f67a1fe61847d003283effa9efe9b0f4f2bc690b7d25a",
+    "tsconfig.json": "e579a7e4376879a28f9efc87311e036b44acef879d2851690d26526509856d63"
+  }
+}
