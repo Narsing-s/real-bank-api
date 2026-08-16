@@ -114,11 +114,9 @@ jobs:
 
       - name: MUnit tests
         if: ${{ inputs.munit }}
-        working-directory: real-bank-api
         run: mvn --batch-mode test
 
       - name: Deploy to CloudHub 2.0
-        working-directory: real-bank-api
         env:
           ANYPOINT_CLIENT_ID: ${{ secrets.ANYPOINT_CLIENT_ID }}
           ANYPOINT_CLIENT_SECRET: ${{ secrets.ANYPOINT_CLIENT_SECRET }}
