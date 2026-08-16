@@ -114,6 +114,8 @@ jobs:
 
       - name: MUnit tests
         if: ${{ inputs.munit }}
+        env:
+          ANYPOINT_ORG_ID: ${{ vars.ANYPOINT_ORG_ID }}
         run: mvn --batch-mode test
 
       - name: Deploy to CloudHub 2.0
