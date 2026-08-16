@@ -26,6 +26,20 @@
                 <version>${mule.maven.plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <cloudhub2Deployment>
+                        <uri>https://anypoint.mulesoft.com</uri>
+                        <provider>MC</provider>
+                        <environment>${cloudhub2.environment}</environment>
+                        <target>${cloudhub2.target}</target>
+                        <muleVersion>${cloudhub2.muleVersion}</muleVersion>
+                        <applicationName>${cloudhub2.applicationName}</applicationName>
+                        <replicas>${cloudhub2.replicas}</replicas>
+                        <vCores>${cloudhub2.vCores}</vCores>
+                        <businessGroupId>${cloudhub2.businessGroupId}</businessGroupId>
+                        <connectedAppClientId>${cloudhub2.connectedAppClientId}</connectedAppClientId>
+                        <connectedAppClientSecret>${cloudhub2.connectedAppClientSecret}</connectedAppClientSecret>
+                        <connectedAppGrantType>${cloudhub2.connectedAppGrantType}</connectedAppGrantType>
+                    </cloudhub2Deployment>
                     <sharedLibraries>
                         <sharedLibrary>
                             <groupId>net.snowflake</groupId>
