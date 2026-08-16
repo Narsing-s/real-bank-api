@@ -1,4 +1,4 @@
-name: Deploy Reference Customer API to CloudHub 2.0 - DEV
+name: Deploy to CloudHub 2.0 - DEV
 
 on:
   workflow_dispatch:
