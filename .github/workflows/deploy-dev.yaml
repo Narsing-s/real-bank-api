@@ -17,7 +17,7 @@ on:
         description: CloudHub application name
         required: true
         type: string
-        default: customer-api-dev
+        default: real-bank-api-dev
       mule_runtime:
         description: Mule runtime version
         required: true
