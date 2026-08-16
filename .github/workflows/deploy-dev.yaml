@@ -114,22 +114,11 @@ jobs:
 
       - name: MUnit tests
         if: ${{ inputs.munit }}
-        working-directory: customer-api
+        working-directory: real-bank-api
         run: mvn --batch-mode test
 
-      - name: Publish customer-api to Anypoint Exchange
-        working-directory: customer-api
-        env:
-          ANYPOINT_ORG_ID: ${{ vars.ANYPOINT_ORG_ID }}
-          ANYPOINT_CLIENT_ID: ${{ secrets.ANYPOINT_CLIENT_ID }}
-          ANYPOINT_CLIENT_SECRET: ${{ secrets.ANYPOINT_CLIENT_SECRET }}
-        run: |
-          set -e
-          echo "Publishing customer-api:${GITHUB_SHA:0:8} to Exchange business group $ANYPOINT_ORG_ID"
-          mvn --batch-mode clean deploy -Daether.connector.basic.parallelPut=false
-
-      - name: Deploy published customer-api to CloudHub 2.0
-        working-directory: customer-api
+      - name: Deploy to CloudHub 2.0
+        working-directory: real-bank-api
         env:
           ANYPOINT_CLIENT_ID: ${{ secrets.ANYPOINT_CLIENT_ID }}
           ANYPOINT_CLIENT_SECRET: ${{ secrets.ANYPOINT_CLIENT_SECRET }}
