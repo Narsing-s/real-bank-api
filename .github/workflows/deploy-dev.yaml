@@ -123,7 +123,7 @@ jobs:
           ANYPOINT_ORG_ID: ${{ vars.ANYPOINT_ORG_ID }}
         run: |
           set -e
-          mvn --batch-mode mule:deploy -DmuleDeploy \
+          mvn --batch-mode clean deploy -DmuleDeploy \
             -Dcloudhub2.environment="${{ inputs.environment }}" \
             -Dcloudhub2.target="${{ inputs.target }}" \
             -Dcloudhub2.applicationName="${{ inputs.application_name }}" \
