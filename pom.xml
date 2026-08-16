@@ -2,7 +2,7 @@
     xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>${env.ANYPOINT_ORG_ID}</groupId>
+    <groupId>${anypoint.org.id}</groupId>
     <artifactId>real-bank-api</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>mule-application</packaging>
@@ -12,7 +12,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <app.runtime>4.9.0</app.runtime>
         <mule.maven.plugin.version>4.3.0</mule.maven.plugin.version>
-        <exchange.url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${env.ANYPOINT_ORG_ID}/maven</exchange.url>
+        <anypoint.org.id>${env.ANYPOINT_ORG_ID}</anypoint.org.id>
+        <exchange.url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${anypoint.org.id}/maven</exchange.url>
     </properties>
     <distributionManagement>
         <repository>
