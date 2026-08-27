@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion><groupId>com.mycompany</groupId><artifactId>real-bank-api</artifactId><version>1.0.0-SNAPSHOT</version><packaging>mule-application</packaging><name>real-bank-api</name>
-  <properties><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding><app.runtime>4.9.0</app.runtime><mule.maven.plugin.version>4.3.0</mule.maven.plugin.version><exchange.url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${env.ANYPOINT_ORG_ID}/maven</exchange.url></properties>
+  <properties><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding><app.runtime>4.9.0</app.runtime><mule.maven.plugin.version>4.4.0</mule.maven.plugin.version><exchange.url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${env.ANYPOINT_ORG_ID}/maven</exchange.url></properties>
   <distributionManagement><repository><id>anypoint-exchange</id><name>Anypoint Exchange</name><url>${exchange.url}</url><layout>default</layout></repository></distributionManagement>
   <build><plugins>
     <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-clean-plugin</artifactId><version>3.2.0</version></plugin>
