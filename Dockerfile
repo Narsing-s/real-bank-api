@@ -1,8 +1,8 @@
 # Render deployment for real-bank-api
-#
-# The first stage builds the Mule application artifact. The second stage must
-# contain a compatible Mule Runtime Engine; a Mule application JAR is NOT a
-# normal Java executable JAR.
+# Builds the Mule application in Docker, then runs it with a Mule runtime.
+
+# IMPORTANT: ARG used by FROM must be declared before the first FROM.
+ARG MULE_RUNTIME_IMAGE=javastreets/mule:latest
 
 FROM maven:3.9.9-eclipse-temurin-17 AS builder
 WORKDIR /build
@@ -10,14 +10,9 @@ WORKDIR /build
 COPY pom.xml ./
 COPY src ./src
 
-# Package only. Render must not run the CloudHub/Anypoint deployment goal.
+# Build the Mule application only. Do NOT invoke the CloudHub deployment goal.
 RUN mvn -B -U clean package -DskipTests
 
-# Public Mule Community runtime image.
-# For a Mule 4.9-compatible runtime, set this Docker build arg in Render to
-# your compatible runtime image (for example, an image you build/publish from
-# a licensed Mule runtime distribution).
-ARG MULE_RUNTIME_IMAGE=javastreets/mule:latest
 FROM ${MULE_RUNTIME_IMAGE}
 
 USER root
@@ -29,10 +24,8 @@ RUN mkdir -p /opt/mule/apps /opt/mule/logs
 
 COPY --from=builder /build/target/real-bank-api-1.0.0-SNAPSHOT-mule-application.jar /opt/mule/apps/real-bank-api.jar
 
-# Render supplies PORT at runtime. Mule supports -M-D JVM/system properties,
-# which take precedence over values in the application's YAML properties file.
-# This also maps Render environment variables to the application's existing
-# db.sf.* and email.* property names without putting credentials in Git.
+# Render supplies PORT at runtime. Pass application properties through
+# environment variables so no credentials are stored in Git.
 RUN cat > /usr/local/bin/start-real-bank-api.sh <<'EOF'
 #!/bin/sh
 set -eu
