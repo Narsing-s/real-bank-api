@@ -6,7 +6,6 @@ ARG MULE_RUNTIME_IMAGE=javastreets/mule:latest
 FROM maven:3.9.9-eclipse-temurin-17 AS builder
 WORKDIR /build
 
-# Mule Maven Plugin requires mule-artifact.json at the project root.
 COPY pom.xml ./
 COPY mule-artifact.json ./
 COPY src ./src
@@ -31,9 +30,9 @@ set -eu
 
 PORT_VALUE="${PORT:-8081}"
 
-# Keep the JVM inside Render's small container memory budget.
-# Mule has a substantial runtime footprint, so cap heap/metaspace and use SerialGC.
-export MULE_JAVA_OPTS="${MULE_JAVA_OPTS:-} -Xms128m -Xmx256m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:+UseSerialGC"
+# Render Free/Starter services have only 512 MiB RAM. Mule itself has a
+# significant baseline footprint, so keep the major JVM memory pools bounded.
+export MULE_JAVA_OPTS="${MULE_JAVA_OPTS:-} -Xms64m -Xmx128m -Xss256k -XX:MaxMetaspaceSize=64m -XX:CompressedClassSpaceSize=16m -XX:ReservedCodeCacheSize=16m -XX:MaxDirectMemorySize=32m -XX:+UseSerialGC -XX:+UseContainerSupport"
 
 exec "${MULE_HOME}/bin/mule" console \
   -M-Dhttp.listener.host=0.0.0.0 \
