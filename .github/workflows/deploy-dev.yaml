@@ -1,11 +1,11 @@
-name: Deploy to CloudHub 2.0 - PROD
+name: Deploy to CloudHub 2.0 - DEV
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
     inputs:
-      environment: {description: Anypoint Platform environment name, required: true, type: string, default: dev}
+      environment: {description: Exact Anypoint Platform environment name, required: true, type: string, default: dev}
       target: {description: CloudHub 2.0 target/shared space name, required: true, type: string, default: Cloudhub-US-East-2}
       application_name: {description: CloudHub application name, required: true, type: string, default: real-bank-api}
       mule_runtime: {description: Mule runtime version, required: true, type: string, default: "4.9.0"}
@@ -29,8 +29,6 @@ jobs:
     env:
       ANYPOINT_CLIENT_ID: ${{ secrets.ANYPOINT_CLIENT_ID }}
       ANYPOINT_CLIENT_SECRET: ${{ secrets.ANYPOINT_CLIENT_SECRET }}
-      # Use the explicit Business Group secret when present. For a single-BG setup,
-      # the repository ANYPOINT_ORG_ID is a safe fallback and avoids a hard failure.
       BUSINESS_GROUP_ID: ${{ secrets.BUSINESS_GROUP_ID || secrets.ANYPOINT_ORG_ID }}
       ANYPOINT_ORG_ID: ${{ secrets.ANYPOINT_ORG_ID }}
       DB_SF_NAME: ${{ secrets.DB_SF_NAME }}
@@ -57,12 +55,16 @@ jobs:
         run: |
           set -euo pipefail
           missing=0
-          for name in ANYPOINT_CLIENT_ID ANYPOINT_CLIENT_SECRET BUSINESS_GROUP_ID ANYPOINT_ORG_ID DB_SF_NAME DB_SF_WAREHOUSE DB_SF_DATABASE DB_SF_SCHEMA DB_SF_USER DB_SF_PASSWORD DB_SF_ROLE EMAIL_USERNAME EMAIL_PASSWORD; do
+          for name in ANYPOINT_CLIENT_ID ANYPOINT_CLIENT_SECRET ANYPOINT_ORG_ID DB_SF_NAME DB_SF_WAREHOUSE DB_SF_DATABASE DB_SF_SCHEMA DB_SF_USER DB_SF_PASSWORD DB_SF_ROLE EMAIL_USERNAME EMAIL_PASSWORD; do
             if [ -z "${!name:-}" ]; then
               echo "::error::Missing GitHub secret: $name"
               missing=1
             fi
           done
+          if [ -z "${BUSINESS_GROUP_ID:-}" ]; then
+            echo "::error::Missing GitHub secret: BUSINESS_GROUP_ID (or ANYPOINT_ORG_ID fallback)"
+            missing=1
+          fi
           if [ "$missing" -ne 0 ]; then
             exit 1
           fi
@@ -97,7 +99,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf "$HOME/.m2/repository/com/github/everit-org/json-schema/org.everit.json.schema/1.12.2"
           mvn --batch-mode -U clean test
+
+      - name: Show CloudHub 2 deployment target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Anypoint environment: ${{ inputs.environment || 'dev' }}"
+          echo "CloudHub 2 target: ${{ inputs.target || 'Cloudhub-US-East-2' }}"
+          echo "Application name: ${{ inputs.application_name || 'real-bank-api' }}"
+          echo "Mule runtime: ${{ inputs.mule_runtime || '4.9.0' }}"
 
       - name: Deploy to CloudHub 2.0
         shell: bash
