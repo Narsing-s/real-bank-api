@@ -60,11 +60,11 @@ jobs:
           chmod 600 "$HOME/.m2/settings.xml"
       - name: MUnit tests
         if: \${{ inputs.munit || github.event_name == 'push' }}
-        run: mvn --batch-mode test
+        run: mvn --batch-mode -U test
       - name: Deploy to CloudHub 2.0
         run: |
           set -euo pipefail
-          mvn --batch-mode clean deploy -DmuleDeploy \
+          mvn --batch-mode -U clean deploy -DmuleDeploy \
             -Dcloudhub2.environment="\${{ inputs.environment || 'dev' }}" \
             -Dcloudhub2.target="\${{ inputs.target || 'Cloudhub-US-East-2' }}" \
             -Dcloudhub2.applicationName="\${{ inputs.application_name || 'real-bank-api' }}" \
