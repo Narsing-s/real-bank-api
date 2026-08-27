@@ -31,6 +31,10 @@ set -eu
 
 PORT_VALUE="${PORT:-8081}"
 
+# Keep the JVM inside Render's small container memory budget.
+# Mule has a substantial runtime footprint, so cap heap/metaspace and use SerialGC.
+export MULE_JAVA_OPTS="${MULE_JAVA_OPTS:-} -Xms128m -Xmx256m -XX:MaxMetaspaceSize=96m -XX:ReservedCodeCacheSize=32m -XX:+UseSerialGC"
+
 exec "${MULE_HOME}/bin/mule" console \
   -M-Dhttp.listner.host=0.0.0.0 \
   -M-Dhttp.listner.port="${PORT_VALUE}" \
