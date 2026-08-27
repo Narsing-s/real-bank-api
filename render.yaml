@@ -4,5 +4,7 @@ services:
     runtime: static
     rootDir: frontend
     buildCommand: "echo 'Static frontend - no build required'"
-    staticPublishPath: .
-    pullRequestPreviewsEnabled: true
+    staticPublishPath: frontend
+    autoDeployTrigger: commit
+    previews:
+      generation: automatic
