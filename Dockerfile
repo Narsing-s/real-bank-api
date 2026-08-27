@@ -1,16 +1,17 @@
 # Render deployment for real-bank-api
-# Builds the Mule application in Docker, then runs it with a Mule runtime.
+# Build the Mule application in Docker, then run the packaged application.
 
-# IMPORTANT: ARG used by FROM must be declared before the first FROM.
 ARG MULE_RUNTIME_IMAGE=javastreets/mule:latest
 
 FROM maven:3.9.9-eclipse-temurin-17 AS builder
 WORKDIR /build
 
+# Mule Maven Plugin requires mule-artifact.json at the project root.
 COPY pom.xml ./
+COPY mule-artifact.json ./
 COPY src ./src
 
-# Build the Mule application only. Do NOT invoke the CloudHub deployment goal.
+# Build only. No CloudHub/Anypoint deployment is performed in Render.
 RUN mvn -B -U clean package -DskipTests
 
 FROM ${MULE_RUNTIME_IMAGE}
@@ -24,8 +25,6 @@ RUN mkdir -p /opt/mule/apps /opt/mule/logs
 
 COPY --from=builder /build/target/real-bank-api-1.0.0-SNAPSHOT-mule-application.jar /opt/mule/apps/real-bank-api.jar
 
-# Render supplies PORT at runtime. Pass application properties through
-# environment variables so no credentials are stored in Git.
 RUN cat > /usr/local/bin/start-real-bank-api.sh <<'EOF'
 #!/bin/sh
 set -eu
@@ -47,6 +46,7 @@ exec "${MULE_HOME}/bin/mule" console \
   -M-Demail.username="${EMAIL_USERNAME:-}" \
   -M-Demail.password="${EMAIL_PASSWORD:-}"
 EOF
+
 RUN chmod +x /usr/local/bin/start-real-bank-api.sh
 
 EXPOSE 8081
