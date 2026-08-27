@@ -1,4 +1,5 @@
 name: Deploy to CloudHub 2.0 - PROD
+
 on:
   push:
     branches: [main]
@@ -16,7 +17,10 @@ on:
         options: ["0.1","0.2","0.5","1","1.5","2","2.5","3","3.5","4"]
         default: "0.1"
       munit: {description: Run MUnit before deployment, required: true, type: boolean, default: true}
-permissions: {contents: read}
+
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Build, test and deploy Real Bank API
@@ -25,7 +29,10 @@ jobs:
     env:
       ANYPOINT_CLIENT_ID: ${{ secrets.ANYPOINT_CLIENT_ID }}
       ANYPOINT_CLIENT_SECRET: ${{ secrets.ANYPOINT_CLIENT_SECRET }}
-      BUSINESS_GROUP_ID: ${{ secrets.BUSINESS_GROUP_ID }}
+      # Use the explicit Business Group secret when present. For a single-BG setup,
+      # the repository ANYPOINT_ORG_ID is a safe fallback and avoids a hard failure.
+      BUSINESS_GROUP_ID: ${{ secrets.BUSINESS_GROUP_ID || secrets.ANYPOINT_ORG_ID }}
+      ANYPOINT_ORG_ID: ${{ secrets.ANYPOINT_ORG_ID }}
       DB_SF_NAME: ${{ secrets.DB_SF_NAME }}
       DB_SF_WAREHOUSE: ${{ secrets.DB_SF_WAREHOUSE }}
       DB_SF_DATABASE: ${{ secrets.DB_SF_DATABASE }}
@@ -35,29 +42,48 @@ jobs:
       DB_SF_ROLE: ${{ secrets.DB_SF_ROLE }}
       EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
-        with: {distribution: temurin, java-version: "17", cache: maven}
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
       - name: Verify required deployment and application secrets
         shell: bash
         run: |
           set -euo pipefail
           missing=0
-          for name in ANYPOINT_CLIENT_ID ANYPOINT_CLIENT_SECRET BUSINESS_GROUP_ID DB_SF_NAME DB_SF_WAREHOUSE DB_SF_DATABASE DB_SF_SCHEMA DB_SF_USER DB_SF_PASSWORD DB_SF_ROLE EMAIL_USERNAME EMAIL_PASSWORD; do
-            if [ -z "${!name:-}" ]; then echo "::error::Missing GitHub environment secret: $name"; missing=1; fi
+          for name in ANYPOINT_CLIENT_ID ANYPOINT_CLIENT_SECRET BUSINESS_GROUP_ID ANYPOINT_ORG_ID DB_SF_NAME DB_SF_WAREHOUSE DB_SF_DATABASE DB_SF_SCHEMA DB_SF_USER DB_SF_PASSWORD DB_SF_ROLE EMAIL_USERNAME EMAIL_PASSWORD; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub secret: $name"
+              missing=1
+            fi
           done
-          if [ "$missing" -ne 0 ]; then exit 1; fi
-      - name: Configure Maven authentication for Exchange
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
+      - name: Configure Maven authentication for Anypoint Exchange
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$HOME/.m2"
           cat > "$HOME/.m2/settings.xml" <<EOF
-          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
             <servers>
               <server>
                 <id>anypoint-exchange</id>
+                <username>~~~Client~~~</username>
+                <password>${ANYPOINT_CLIENT_ID}~?~${ANYPOINT_CLIENT_SECRET}</password>
+              </server>
+              <server>
+                <id>anypoint-exchange-v3</id>
                 <username>~~~Client~~~</username>
                 <password>${ANYPOINT_CLIENT_ID}~?~${ANYPOINT_CLIENT_SECRET}</password>
               </server>
@@ -65,10 +91,16 @@ jobs:
           </settings>
           EOF
           chmod 600 "$HOME/.m2/settings.xml"
-      - name: MUnit tests
+
+      - name: Build and run tests
         if: ${{ inputs.munit || github.event_name == 'push' }}
-        run: mvn --batch-mode -U test
+        shell: bash
+        run: |
+          set -euo pipefail
+          mvn --batch-mode -U clean test
+
       - name: Deploy to CloudHub 2.0
+        shell: bash
         run: |
           set -euo pipefail
           mvn --batch-mode -U clean deploy -DmuleDeploy \
