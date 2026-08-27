@@ -1,52 +1,60 @@
-# Render Docker deployment for the Mule application.
+# Render deployment for real-bank-api
 #
-# IMPORTANT:
-# Mule applications are not standalone Java JARs. They require a Mule Runtime
-# Engine to execute. The builder stage creates the Mule application artifact;
-# the runtime stage must therefore be a compatible Mule runtime image.
-#
-# The default image is a public Mule Community Edition image. For this project,
-# prefer a Mule 4.9-compatible runtime image if you have one available.
+# The first stage builds the Mule application artifact. The second stage must
+# contain a compatible Mule Runtime Engine; a Mule application JAR is NOT a
+# normal Java executable JAR.
 
 FROM maven:3.9.9-eclipse-temurin-17 AS builder
-
 WORKDIR /build
+
 COPY pom.xml ./
 COPY src ./src
 
-# Build the Mule application. Do NOT run the CloudHub deployment goal in Render.
+# Package only. Render must not run the CloudHub/Anypoint deployment goal.
 RUN mvn -B -U clean package -DskipTests
 
-# Use a Mule runtime image. This public image contains a Mule Community runtime.
-# If you have a licensed/compatible Mule 4.9 runtime image, set MULE_RUNTIME_IMAGE
-# in Render's Docker build configuration and use it instead.
+# Public Mule Community runtime image.
+# For a Mule 4.9-compatible runtime, set this Docker build arg in Render to
+# your compatible runtime image (for example, an image you build/publish from
+# a licensed Mule runtime distribution).
 ARG MULE_RUNTIME_IMAGE=javastreets/mule:latest
 FROM ${MULE_RUNTIME_IMAGE}
 
 USER root
 
 ENV MULE_HOME=/opt/mule \
-    MULE_BASE=/opt/mule \
-    MULE_APP=/opt/mule/apps/real-bank-api.jar \
-    PORT=8081
+    MULE_BASE=/opt/mule
 
 RUN mkdir -p /opt/mule/apps /opt/mule/logs
 
-COPY --from=builder /build/target/real-bank-api-1.0.0-SNAPSHOT-mule-application.jar ${MULE_APP}
+COPY --from=builder /build/target/real-bank-api-1.0.0-SNAPSHOT-mule-application.jar /opt/mule/apps/real-bank-api.jar
 
-# Render assigns PORT dynamically. The Mule application reads the listener
-# port from its property file, so the entrypoint replaces the configured port
-# immediately before starting Mule.
-RUN printf '%s\n' \
-  '#!/bin/sh' \
-  'set -eu' \
-  'PORT_VALUE="${PORT:-8081}"' \
-  'CONFIG="${MULE_HOME}/apps/real-bank-api.jar"' \
-  'echo "Starting real-bank-api on Render PORT=${PORT_VALUE}"' \
-  'exec "${MULE_HOME}/bin/mule" console' \
-  > /usr/local/bin/start-real-bank-api.sh \
-  && chmod +x /usr/local/bin/start-real-bank-api.sh
+# Render supplies PORT at runtime. Mule supports -M-D JVM/system properties,
+# which take precedence over values in the application's YAML properties file.
+# This also maps Render environment variables to the application's existing
+# db.sf.* and email.* property names without putting credentials in Git.
+RUN cat > /usr/local/bin/start-real-bank-api.sh <<'EOF'
+#!/bin/sh
+set -eu
+
+PORT_VALUE="${PORT:-8081}"
+
+exec "${MULE_HOME}/bin/mule" console \
+  -M-Dhttp.listner.host=0.0.0.0 \
+  -M-Dhttp.listner.port="${PORT_VALUE}" \
+  -M-Ddb.sf.name="${DB_SF_NAME:-}" \
+  -M-Ddb.sf.warehouse="${DB_SF_WAREHOUSE:-}" \
+  -M-Ddb.sf.database="${DB_SF_DATABASE:-}" \
+  -M-Ddb.sf.schema="${DB_SF_SCHEMA:-}" \
+  -M-Ddb.sf.user="${DB_SF_USER:-}" \
+  -M-Ddb.sf.password="${DB_SF_PASSWORD:-}" \
+  -M-Ddb.sf.role="${DB_SF_ROLE:-}" \
+  -M-Demail.host="${EMAIL_HOST:-smtp.gmail.com}" \
+  -M-Demail.port="${EMAIL_PORT:-587}" \
+  -M-Demail.username="${EMAIL_USERNAME:-}" \
+  -M-Demail.password="${EMAIL_PASSWORD:-}"
+EOF
+RUN chmod +x /usr/local/bin/start-real-bank-api.sh
 
 EXPOSE 8081
-
 ENTRYPOINT ["/usr/local/bin/start-real-bank-api.sh"]
