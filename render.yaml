@@ -1,10 +1,13 @@
 services:
   - type: web
     name: real-bank-frontend
-    runtime: static
+    runtime: docker
     rootDir: frontend
-    buildCommand: "echo 'Static frontend - no build required'"
-    staticPublishPath: .
+    dockerfilePath: ./Dockerfile
     autoDeployTrigger: commit
+    envVars:
+      - key: API_UPSTREAM
+        value: http://127.0.0.1:8081
+    healthCheckPath: /
     previews:
       generation: automatic
