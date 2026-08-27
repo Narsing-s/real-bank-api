@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: real-bank-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: "echo 'Static frontend - no build required'"
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: true
