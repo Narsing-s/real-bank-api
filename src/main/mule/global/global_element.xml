@@ -8,7 +8,8 @@
   <configuration-properties doc:name="Configuration properties" doc:id="70a85def-ebf2-4624-ab4e-958a162ddf43" file="config_properties/local_properties.yaml" />
   <snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="b703990f-2dc1-4198-baf1-3b0329e3ac87"><snowflake:snowflake-connection accountName="${db.sf.name}" warehouse="${db.sf.warehouse}" database="${db.sf.database}" schema="${db.sf.schema}" user="${db.sf.user}" password="${db.sf.password}" role="${db.sf.role}" /></snowflake:snowflake-config>
   <flow name="real-bank-api-health">
-    <http:listener config-ref="real-bank-api-httpListenerConfig" path="/health"><http:response statusCode="200"><http:headers><![CDATA[#[{"Content-Type": "application/json"}]]]></http:headers></http:response><set-payload value='#[%dw 2.0 output application/json --- {status: "UP", service: "real-bank-api"}]' /></http:listener>
+    <http:listener config-ref="real-bank-api-httpListenerConfig" path="/health"><http:response statusCode="200"><http:headers><![CDATA[#[{"Content-Type": "application/json"}]]]></http:headers></http:response></http:listener>
+    <set-payload value='#[%dw 2.0 output application/json --- {status: "UP", service: "real-bank-api"}]' />
   </flow>
   <flow name="real-bank-api-main">
     <http:listener config-ref="real-bank-api-httpListenerConfig" path="/api/*"><http:response statusCode="#[vars.httpStatus default 200]"><http:headers>#[vars.outboundHeaders default {}]</http:headers></http:response><http:error-response statusCode="#[vars.httpStatus default 500]"><http:body>#[payload]</http:body><http:headers>#[vars.outboundHeaders default {}]</http:headers></http:error-response></http:listener>
