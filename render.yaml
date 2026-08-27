@@ -8,3 +8,35 @@ services:
     autoDeployTrigger: commit
     previews:
       generation: automatic
+
+  - type: web
+    name: real-bank-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: DB_SF_NAME
+        sync: false
+      - key: DB_SF_WAREHOUSE
+        sync: false
+      - key: DB_SF_DATABASE
+        sync: false
+      - key: DB_SF_SCHEMA
+        sync: false
+      - key: DB_SF_USER
+        sync: false
+      - key: DB_SF_PASSWORD
+        sync: false
+      - key: DB_SF_ROLE
+        sync: false
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USERNAME
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
