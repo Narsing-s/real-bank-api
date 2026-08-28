@@ -3,8 +3,8 @@ services:
     name: real-bank-frontend
     runtime: static
     rootDir: frontend
-    buildCommand: "echo 'Static frontend - no build required'"
-    staticPublishPath: .
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: dist
     autoDeployTrigger: commit
     previews:
       generation: automatic
@@ -12,12 +12,14 @@ services:
   - type: web
     name: real-bank-api
     runtime: docker
-    plan: free
+    plan: standard
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
+      - key: PORT
+        value: "10000"
       - key: DB_SF_NAME
         sync: false
       - key: DB_SF_WAREHOUSE
