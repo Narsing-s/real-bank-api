@@ -10,7 +10,6 @@ COPY pom.xml ./
 COPY mule-artifact.json ./
 COPY src ./src
 
-# Build only. No CloudHub/Anypoint deployment is performed in Render.
 RUN mvn -B -U clean package -DskipTests
 
 FROM ${MULE_RUNTIME_IMAGE}
@@ -28,12 +27,16 @@ RUN cat > /usr/local/bin/start-real-bank-api.sh <<'EOF'
 #!/bin/sh
 set -eu
 
-PORT_VALUE="${PORT:-8081}"
+# Render supplies PORT for Web Services. Mule must bind to all interfaces.
+PORT_VALUE="${PORT:-10000}"
 
-# Render Free/Starter services have only 512 MiB RAM. Mule itself has a
-# significant baseline footprint, so keep the major JVM memory pools bounded.
-export MULE_JAVA_OPTS="${MULE_JAVA_OPTS:-} -Xms64m -Xmx128m -Xss256k -XX:MaxMetaspaceSize=64m -XX:CompressedClassSpaceSize=16m -XX:ReservedCodeCacheSize=16m -XX:MaxDirectMemorySize=32m -XX:+UseSerialGC -XX:+UseContainerSupport"
+# Keep the JVM bounded on small Render instances. Mule also needs native,
+# thread and class metadata memory, so the Java heap is intentionally kept
+# well below the container limit.
+export MULE_JAVA_OPTS="${MULE_JAVA_OPTS:-} -Xms64m -Xmx96m -Xss192k -XX:MaxMetaspaceSize=48m -XX:CompressedClassSpaceSize=12m -XX:ReservedCodeCacheSize=8m -XX:MaxDirectMemorySize=16m -XX:+UseSerialGC -XX:+UseContainerSupport"
 
+# Render health/port detection requires a listener on 0.0.0.0 and the
+# dynamically supplied PORT. All application configuration remains external.
 exec "${MULE_HOME}/bin/mule" console \
   -M-Dhttp.listener.host=0.0.0.0 \
   -M-Dhttp.listener.port="${PORT_VALUE}" \
@@ -52,5 +55,6 @@ EOF
 
 RUN chmod +x /usr/local/bin/start-real-bank-api.sh
 
-EXPOSE 8081
+# Documentation/default only; Render's PORT is the actual listener port.
+EXPOSE 10000
 ENTRYPOINT ["/usr/local/bin/start-real-bank-api.sh"]
