@@ -149,3 +149,68 @@ Sensitive configuration is expected to be supplied through environment variables
 ## Design principle
 
 The documentation is additive. Existing source directories, flows, frontend files, deployment files, and API contracts are not replaced by the documentation structure.
+
+
+## Additional visual diagrams
+
+The diagrams below are intentionally kept close to the repository structure so that developers can trace a request from frontend to MuleSoft, database, notifications, and deployment.
+
+### Component diagram
+
+~~~mermaid
+flowchart TB
+ FE[frontend/] --> HTTP[Mule HTTP Listener]
+ HTTP --> APIKIT[APIKit Router]
+ APIKIT --> RAML[RAML Contract]
+ APIKIT --> MAIN[Main Implementation Flows]
+ MAIN --> DB[Database Implementation]
+ MAIN --> NUM[Account Number Generation]
+ MAIN --> MAIL[Email Implementation]
+ DB --> SF[(Snowflake)]
+ MAIL --> SMTP[SMTP]
+ MAIN --> MSG[External Messaging]
+~~~
+
+### Request lifecycle
+
+~~~mermaid
+sequenceDiagram
+ participant C as Client
+ participant M as Mule
+ participant R as APIKit/RAML
+ participant B as Business Flow
+ participant D as Snowflake
+ C->>M: HTTP request
+ M->>R: Route request
+ R->>B: Invoke flow
+ B->>D: Query/update when required
+ D-->>B: Result
+ B-->>C: JSON response
+~~~
+
+### Account lifecycle
+
+~~~mermaid
+stateDiagram-v2
+ [*] --> AccountCreation
+ AccountCreation --> ACTIVE
+ ACTIVE --> ACTIVE: Deposit / Withdrawal / Update
+ ACTIVE --> INACTIVE: Deactivate
+ INACTIVE --> [*]
+~~~
+
+### Error path
+
+~~~mermaid
+flowchart TD
+ C[Request] --> A[APIKit / Mule Flow]
+ A --> V{Valid request?}
+ V -->|No| E400[400 Bad Request]
+ V -->|Yes| F{Resource available?}
+ F -->|No| E404[404 Not Found]
+ F -->|Yes| P[Business processing]
+ P --> R[Success response]
+ A --> E405[405 Method Not Allowed]
+ A --> E415[415 Unsupported Media Type]
+ A --> E501[501 Not Implemented]
+~~~
