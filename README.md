@@ -78,14 +78,20 @@ real-bank-api/
 
 ## Documentation
 
-Start with the documentation index:
+Start with the [Documentation index](docs/README.md).
 
-- [Documentation index](docs/README.md)
-- [Requirements document](docs/requirements.md)
+Key documents:
+
+- [Requirements](docs/requirements.md)
 - [Architecture](docs/architecture.md)
-- [API reference](docs/api-reference.md)
+- [Diagrams](docs/diagrams.md)
+- [API Reference](docs/api-reference.md)
+- [Testing Guide](docs/testing.md)
+- [Configuration & Deployment](docs/configuration.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Glossary](docs/glossary.md)
 
-The requirements document is derived from the current RAML, Mule flows, frontend, deployment configuration, and project metadata. It is documentation only and does not replace the implementation.
+The requirements document is derived from the current RAML, Mule flows, frontend, deployment configuration, and project metadata. The documentation does not replace the implementation.
 
 ## Runtime and deployment
 
@@ -113,6 +119,10 @@ as its default API base.
 ## Important
 
 This is a software project that models banking operations. The documentation describes the current repository behavior and should not be interpreted as a statement that the application provides every control required for a regulated production banking system.
+
+## Documentation-only additions
+
+The files under `docs/` are documentation artifacts. No Mule flow, RAML contract, frontend source, deployment file, or other application code is changed by adding or updating these documents.
 
 ## License
 
